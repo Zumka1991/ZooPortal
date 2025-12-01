@@ -50,6 +50,14 @@ export default function Header() {
               <div className="h-8 w-20 bg-gray-200 animate-pulse rounded" />
             ) : user ? (
               <div className="flex items-center gap-3">
+                {(user.role === 'Admin' || user.role === 'Moderator') && (
+                  <Link
+                    href="/admin"
+                    className="text-gray-600 hover:text-green-600 transition-colors"
+                  >
+                    Админка
+                  </Link>
+                )}
                 <span className="text-gray-700">{user.name}</span>
                 <button
                   onClick={handleLogout}
@@ -124,6 +132,15 @@ export default function Header() {
               <hr className="my-2" />
               {user ? (
                 <>
+                  {(user.role === 'Admin' || user.role === 'Moderator') && (
+                    <Link
+                      href="/admin"
+                      className="text-green-600 font-medium py-2"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Админка
+                    </Link>
+                  )}
                   <span className="text-gray-700 py-2">{user.name}</span>
                   <button
                     onClick={handleLogout}

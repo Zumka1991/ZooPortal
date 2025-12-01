@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,7 +9,12 @@ using ZooPortal.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Serialize enums as strings
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddOpenApi();
 
 // Database
@@ -53,11 +59,32 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Auto migrate database
+// Auto migrate database and seed admin
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+
+    // Seed admin user if not exists
+    if (!db.Users.Any(u => u.Role == ZooPortal.Api.Models.UserRole.Admin))
+    {
+        var adminEmail = builder.Configuration["Admin:Email"] ?? "admin@zooportal.ru";
+        var adminPassword = builder.Configuration["Admin:Password"] ?? "Admin123!";
+
+        var admin = new ZooPortal.Api.Models.User
+        {
+            Email = adminEmail,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+            Name = "Администратор",
+            Role = ZooPortal.Api.Models.UserRole.Admin,
+            IsActive = true
+        };
+
+        db.Users.Add(admin);
+        db.SaveChanges();
+
+        Console.WriteLine($"Admin user created: {adminEmail}");
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -71,6 +98,16 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 app.UseCors("Frontend");
+
+// Serve uploaded files
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
