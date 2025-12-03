@@ -7,6 +7,7 @@ const stats = [
   { name: 'Галерея', value: '—', href: '/admin/gallery', highlight: true },
   { name: 'Объявления', value: '—', href: '/admin/listings' },
   { name: 'Приютов', value: '—', href: '/admin/shelters' },
+  { name: 'Города', value: '—', href: '/admin/cities' },
 ];
 
 export default function AdminDashboard() {
@@ -58,6 +59,12 @@ export default function AdminDashboard() {
               className="block px-4 py-2 bg-orange-50 text-orange-700 rounded hover:bg-orange-100 transition-colors"
             >
               📋 Модерация объявлений
+            </Link>
+            <Link
+              href="/admin/cities"
+              className="block px-4 py-2 bg-gray-50 text-gray-700 rounded hover:bg-gray-100 transition-colors"
+            >
+              🏙️ Управление городами
             </Link>
           </div>
         </div>

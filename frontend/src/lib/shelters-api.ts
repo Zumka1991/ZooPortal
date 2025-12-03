@@ -380,3 +380,84 @@ export const adminSheltersApi = {
     return adminFetch(`/admin/shelters/${id}`, { method: 'DELETE' });
   },
 };
+
+// Admin Cities API
+export interface AdminCity {
+  id: string;
+  name: string;
+  region?: string;
+  isActive: boolean;
+  sheltersCount: number;
+  listingsCount: number;
+  createdAt: string;
+}
+
+export interface AdminCitiesPagedResponse {
+  items: AdminCity[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface CitiesStats {
+  totalCount: number;
+  activeCount: number;
+  inactiveCount: number;
+  withSheltersCount: number;
+  withListingsCount: number;
+}
+
+export interface SeedCitiesResponse {
+  addedCount: number;
+  totalCount: number;
+  message: string;
+}
+
+export const adminCitiesApi = {
+  getAll: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    isActive?: boolean;
+  }): Promise<AdminCitiesPagedResponse> => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.isActive !== undefined) searchParams.set('isActive', params.isActive.toString());
+
+    const query = searchParams.toString();
+    return adminFetch(`/admin/cities${query ? `?${query}` : ''}`);
+  },
+
+  getById: async (id: string): Promise<AdminCity> => {
+    return adminFetch(`/admin/cities/${id}`);
+  },
+
+  create: async (name: string, region?: string): Promise<AdminCity> => {
+    return adminFetch('/admin/cities', {
+      method: 'POST',
+      body: JSON.stringify({ name, region }),
+    });
+  },
+
+  update: async (id: string, data: { name: string; region?: string; isActive: boolean }): Promise<AdminCity> => {
+    return adminFetch(`/admin/cities/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: string): Promise<void> => {
+    return adminFetch(`/admin/cities/${id}`, { method: 'DELETE' });
+  },
+
+  seedRussianCities: async (): Promise<SeedCitiesResponse> => {
+    return adminFetch('/admin/cities/seed-russia', { method: 'POST' });
+  },
+
+  getStats: async (): Promise<CitiesStats> => {
+    return adminFetch('/admin/cities/stats');
+  },
+};
