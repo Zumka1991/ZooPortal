@@ -10,9 +10,22 @@ public class Listing : BaseEntity
     public Gender? Gender { get; set; }
     public required ListingType Type { get; set; }
     public decimal? Price { get; set; }
-    public required string City { get; set; }
     public string? ContactPhone { get; set; }
-    public ListingStatus Status { get; set; } = ListingStatus.Active;
+    public ListingStatus Status { get; set; } = ListingStatus.Moderation;
+
+    // Город (связь со справочником)
+    public Guid CityId { get; set; }
+    public City City { get; set; } = null!;
+
+    // Модерация
+    public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
+    public string? ModerationComment { get; set; }
+    public DateTime? ModeratedAt { get; set; }
+    public Guid? ModeratedById { get; set; }
+    public User? ModeratedBy { get; set; }
+
+    // Срок жизни объявления (30 дней по умолчанию)
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(30);
 
     // Foreign keys
     public Guid UserId { get; set; }
@@ -61,7 +74,8 @@ public enum ListingType
 
 public enum ListingStatus
 {
-    Active,
-    Closed,
-    Moderation
+    Active,      // Активно (после одобрения модерации)
+    Closed,      // Закрыто владельцем
+    Expired,     // Истёк срок (30 дней)
+    Moderation   // На модерации (начальный статус)
 }

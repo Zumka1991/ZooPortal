@@ -5,7 +5,7 @@ import Link from 'next/link';
 const stats = [
   { name: 'Всего статей', value: '—', href: '/admin/articles' },
   { name: 'Галерея', value: '—', href: '/admin/gallery', highlight: true },
-  { name: 'Пользователей', value: '—', href: '/admin/users' },
+  { name: 'Объявления', value: '—', href: '/admin/listings' },
   { name: 'Приютов', value: '—', href: '/admin/shelters' },
 ];
 
@@ -52,6 +52,12 @@ export default function AdminDashboard() {
               className="block px-4 py-2 bg-cyan-50 text-cyan-700 rounded hover:bg-cyan-100 transition-colors"
             >
               🏠 Модерация приютов
+            </Link>
+            <Link
+              href="/admin/listings"
+              className="block px-4 py-2 bg-orange-50 text-orange-700 rounded hover:bg-orange-100 transition-colors"
+            >
+              📋 Модерация объявлений
             </Link>
           </div>
         </div>

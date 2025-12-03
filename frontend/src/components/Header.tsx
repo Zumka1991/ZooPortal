@@ -98,6 +98,26 @@ export default function Header() {
 
                     <div className="py-1">
                       <Link
+                        href="/listings/my"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Мои объявления
+                      </Link>
+                      <Link
+                        href="/favorites"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                        Избранное
+                      </Link>
+                      <Link
                         href="/shelters/my"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -229,6 +249,20 @@ export default function Header() {
                     </div>
                   </div>
 
+                  <Link
+                    href="/listings/my"
+                    className="text-gray-600 hover:text-green-600 hover:bg-gray-50 transition-colors py-3 px-2 rounded-lg"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Мои объявления
+                  </Link>
+                  <Link
+                    href="/favorites"
+                    className="text-gray-600 hover:text-green-600 hover:bg-gray-50 transition-colors py-3 px-2 rounded-lg"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Избранное
+                  </Link>
                   <Link
                     href="/shelters/my"
                     className="text-gray-600 hover:text-green-600 hover:bg-gray-50 transition-colors py-3 px-2 rounded-lg"

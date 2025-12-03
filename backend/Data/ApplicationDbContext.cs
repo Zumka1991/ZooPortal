@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
     public DbSet<City> Cities => Set<City>();
     public DbSet<ShelterImage> ShelterImages => Set<ShelterImage>();
+    public DbSet<Favorite> Favorites => Set<Favorite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,10 +93,15 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Listing>(entity =>
         {
             entity.Property(e => e.Title).HasMaxLength(200);
-            entity.Property(e => e.City).HasMaxLength(100);
             entity.Property(e => e.Breed).HasMaxLength(100);
             entity.Property(e => e.ContactPhone).HasMaxLength(20);
             entity.Property(e => e.Price).HasPrecision(18, 2);
+            entity.Property(e => e.ModerationComment).HasMaxLength(500);
+
+            entity.HasOne(e => e.City)
+                .WithMany()
+                .HasForeignKey(e => e.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(e => e.User)
                 .WithMany(u => u.Listings)
@@ -105,6 +111,11 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Shelter)
                 .WithMany(s => s.Listings)
                 .HasForeignKey(e => e.ShelterId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ModeratedBy)
+                .WithMany()
+                .HasForeignKey(e => e.ModeratedById)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -173,6 +184,22 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ModeratedById)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Favorite
+        modelBuilder.Entity<Favorite>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.ListingId }).IsUnique();
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Favorites)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Listing)
+                .WithMany()
+                .HasForeignKey(e => e.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 
