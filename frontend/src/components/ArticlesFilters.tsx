@@ -47,7 +47,7 @@ export function ArticlesFilters({ currentCategory, currentAnimalType, currentSea
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-8">
       <form onSubmit={handleSearch} className="mb-4">
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={searchInput}
@@ -57,7 +57,7 @@ export function ArticlesFilters({ currentCategory, currentAnimalType, currentSea
           />
           <button
             type="submit"
-            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap"
           >
             Найти
           </button>
