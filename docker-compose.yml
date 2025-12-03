@@ -31,6 +31,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zooportal;Username=postgres;Password=postgres
       - App__BaseUrl=http://localhost:5000
       - App__AdminSecret=supersecretadmin123
+      - App__FrontendUrl=http://localhost:3000
     volumes:
       - uploads_data:/app/uploads
     depends_on:
