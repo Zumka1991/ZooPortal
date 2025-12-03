@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 export interface User {
   id: string;
@@ -40,7 +40,7 @@ class AuthService {
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await fetch(`${getApiUrl()}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -57,7 +57,7 @@ class AuthService {
   }
 
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetch(`${getApiUrl()}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -75,7 +75,7 @@ class AuthService {
 
   async logout(): Promise<void> {
     try {
-      await fetch(`${API_URL}/auth/logout`, {
+      await fetch(`${getApiUrl()}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ class AuthService {
   async getMe(): Promise<User | null> {
     if (!this.accessToken) return null;
 
-    const response = await fetch(`${API_URL}/auth/me`, {
+    const response = await fetch(`${getApiUrl()}/auth/me`, {
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
       },
@@ -113,7 +113,7 @@ class AuthService {
     if (!this.refreshToken) return false;
 
     try {
-      const response = await fetch(`${API_URL}/auth/refresh`, {
+      const response = await fetch(`${getApiUrl()}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: this.refreshToken }),
@@ -139,6 +139,30 @@ class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.accessToken;
+  }
+
+  async grantAdmin(secretPassword: string): Promise<AuthResponse> {
+    if (!this.accessToken) {
+      throw new Error('Не авторизован');
+    }
+
+    const response = await fetch(`${getApiUrl()}/auth/grant-admin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+      body: JSON.stringify({ secretPassword }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Неверный секретный пароль');
+    }
+
+    const result: AuthResponse = await response.json();
+    this.setTokens(result.accessToken, result.refreshToken);
+    return result;
   }
 
   private setTokens(accessToken: string, refreshToken: string): void {

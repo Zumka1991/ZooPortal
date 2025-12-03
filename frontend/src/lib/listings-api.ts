@@ -1,6 +1,5 @@
 import { authService } from './auth';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 // === Types ===
 
@@ -225,7 +224,7 @@ export const listingsApi = {
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/listings${query ? `?${query}` : ''}`);
+    const response = await fetch(`${getApiUrl()}/listings${query ? `?${query}` : ''}`);
     if (!response.ok) throw new Error('Ошибка загрузки объявлений');
     return response.json();
   },
@@ -235,13 +234,13 @@ export const listingsApi = {
     const headers: HeadersInit = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const response = await fetch(`${API_URL}/listings/${id}`, { headers });
+    const response = await fetch(`${getApiUrl()}/listings/${id}`, { headers });
     if (!response.ok) throw new Error('Объявление не найдено');
     return response.json();
   },
 
   getContact: async (id: string): Promise<{ contactPhone?: string }> => {
-    const response = await fetch(`${API_URL}/listings/${id}/contact`);
+    const response = await fetch(`${getApiUrl()}/listings/${id}/contact`);
     if (!response.ok) throw new Error('Ошибка получения контакта');
     return response.json();
   },
@@ -260,7 +259,7 @@ export const listingsApi = {
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/listings/my${query ? `?${query}` : ''}`, {
+    const response = await fetch(`${getApiUrl()}/listings/my${query ? `?${query}` : ''}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -278,7 +277,7 @@ export const listingsApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings`, {
+    const response = await fetch(`${getApiUrl()}/listings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -305,7 +304,7 @@ export const listingsApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${id}`, {
+    const response = await fetch(`${getApiUrl()}/listings/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -335,7 +334,7 @@ export const listingsApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_URL}/listings/${id}/images`, {
+    const response = await fetch(`${getApiUrl()}/listings/${id}/images`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -349,7 +348,7 @@ export const listingsApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${id}/images/${imageId}`, {
+    const response = await fetch(`${getApiUrl()}/listings/${id}/images/${imageId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -361,7 +360,7 @@ export const listingsApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${id}/close`, {
+    const response = await fetch(`${getApiUrl()}/listings/${id}/close`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -374,7 +373,7 @@ export const listingsApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${id}/renew`, {
+    const response = await fetch(`${getApiUrl()}/listings/${id}/renew`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -387,7 +386,7 @@ export const listingsApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${id}`, {
+    const response = await fetch(`${getApiUrl()}/listings/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -411,7 +410,7 @@ export const favoritesApi = {
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/favorites${query ? `?${query}` : ''}`, {
+    const response = await fetch(`${getApiUrl()}/favorites${query ? `?${query}` : ''}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -429,7 +428,7 @@ export const favoritesApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/favorites/${listingId}`, {
+    const response = await fetch(`${getApiUrl()}/favorites/${listingId}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -447,7 +446,7 @@ export const favoritesApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/favorites/${listingId}`, {
+    const response = await fetch(`${getApiUrl()}/favorites/${listingId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -462,7 +461,7 @@ export const favoritesApi = {
     const searchParams = new URLSearchParams();
     ids.forEach(id => searchParams.append('ids', id));
 
-    const response = await fetch(`${API_URL}/favorites/check?${searchParams.toString()}`, {
+    const response = await fetch(`${getApiUrl()}/favorites/check?${searchParams.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -474,7 +473,7 @@ export const favoritesApi = {
     const token = authService.getAccessToken();
     if (!token) return 0;
 
-    const response = await fetch(`${API_URL}/favorites/count`, {
+    const response = await fetch(`${getApiUrl()}/favorites/count`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -495,7 +494,7 @@ export const likesApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${listingId}/like`, {
+    const response = await fetch(`${getApiUrl()}/listings/${listingId}/like`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -514,7 +513,7 @@ export const likesApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/listings/${listingId}/like`, {
+    const response = await fetch(`${getApiUrl()}/listings/${listingId}/like`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -535,7 +534,7 @@ export const likesApi = {
 async function adminFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = authService.getAccessToken();
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

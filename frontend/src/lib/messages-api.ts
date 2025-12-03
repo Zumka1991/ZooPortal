@@ -1,6 +1,5 @@
 import { authService } from './auth';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 export interface MessageUser {
   id: string;
@@ -49,7 +48,7 @@ export interface StartConversationRequest {
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = authService.getAccessToken();
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

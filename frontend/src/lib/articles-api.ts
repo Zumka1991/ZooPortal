@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 export interface Article {
   id: string;
@@ -81,7 +81,7 @@ export const articlesApi = {
     if (params?.search) searchParams.set('search', params.search);
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/articles${query ? `?${query}` : ''}`);
+    const response = await fetch(`${getApiUrl()}/articles${query ? `?${query}` : ''}`);
 
     if (!response.ok) {
       throw new Error('Ошибка загрузки статей');
@@ -91,7 +91,7 @@ export const articlesApi = {
   },
 
   getArticleBySlug: async (slug: string): Promise<Article> => {
-    const response = await fetch(`${API_URL}/articles/${slug}`);
+    const response = await fetch(`${getApiUrl()}/articles/${slug}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -104,7 +104,7 @@ export const articlesApi = {
   },
 
   getRecentArticles: async (count = 5): Promise<ArticleListItem[]> => {
-    const response = await fetch(`${API_URL}/articles/recent?count=${count}`);
+    const response = await fetch(`${getApiUrl()}/articles/recent?count=${count}`);
 
     if (!response.ok) {
       throw new Error('Ошибка загрузки статей');
@@ -114,7 +114,7 @@ export const articlesApi = {
   },
 
   getPopularArticles: async (count = 5): Promise<ArticleListItem[]> => {
-    const response = await fetch(`${API_URL}/articles/popular?count=${count}`);
+    const response = await fetch(`${getApiUrl()}/articles/popular?count=${count}`);
 
     if (!response.ok) {
       throw new Error('Ошибка загрузки статей');

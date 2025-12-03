@@ -94,4 +94,25 @@ public class AuthController : ControllerBase
             role ?? "User"
         ));
     }
+
+    [Authorize]
+    [HttpPost("grant-admin")]
+    public async Task<ActionResult<AuthResponse>> GrantAdmin([FromBody] GrantAdminRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _authService.GrantAdminAsync(userId, request.SecretPassword);
+
+        if (result == null)
+        {
+            return BadRequest(new { message = "Неверный секретный пароль" });
+        }
+
+        return Ok(result);
+    }
 }

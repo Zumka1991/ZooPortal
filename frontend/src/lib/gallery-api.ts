@@ -1,6 +1,5 @@
 import { authService } from './auth';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 export type ModerationStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -67,7 +66,7 @@ export const galleryApi = {
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/gallery${query ? `?${query}` : ''}`);
+    const response = await fetch(`${getApiUrl()}/gallery${query ? `?${query}` : ''}`);
 
     if (!response.ok) {
       throw new Error('Ошибка загрузки галереи');
@@ -90,7 +89,7 @@ export const galleryApi = {
     if (params?.status) searchParams.set('status', params.status);
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/gallery/my${query ? `?${query}` : ''}`, {
+    const response = await fetch(`${getApiUrl()}/gallery/my${query ? `?${query}` : ''}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -119,7 +118,7 @@ export const galleryApi = {
     formData.append('title', title);
     formData.append('file', file);
 
-    const response = await fetch(`${API_URL}/gallery`, {
+    const response = await fetch(`${getApiUrl()}/gallery`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -147,7 +146,7 @@ export const galleryApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/gallery/${id}`, {
+    const response = await fetch(`${getApiUrl()}/gallery/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -173,7 +172,7 @@ export const galleryApi = {
 async function adminFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = authService.getAccessToken();
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

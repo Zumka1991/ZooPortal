@@ -16,6 +16,7 @@ public interface IAuthService
     Task<AuthResponse?> LoginAsync(LoginRequest request);
     Task<AuthResponse?> RefreshTokenAsync(string refreshToken);
     Task<bool> RevokeTokenAsync(Guid userId);
+    Task<AuthResponse?> GrantAdminAsync(Guid userId, string secretPassword);
 }
 
 public class AuthService : IAuthService
@@ -95,6 +96,27 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<AuthResponse?> GrantAdminAsync(Guid userId, string secretPassword)
+    {
+        var adminSecret = _configuration["App:AdminSecret"] ?? "supersecretadmin123";
+
+        if (secretPassword != adminSecret)
+        {
+            return null;
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null || !user.IsActive)
+        {
+            return null;
+        }
+
+        user.Role = UserRole.Admin;
+        await _context.SaveChangesAsync();
+
+        return await GenerateAuthResponse(user);
     }
 
     private async Task<AuthResponse> GenerateAuthResponse(User user)

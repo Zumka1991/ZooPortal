@@ -1,6 +1,5 @@
 import { authService } from './auth';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 export type LostFoundType = 'Lost' | 'Found';
 export type AnimalType = 'Dog' | 'Cat' | 'Bird' | 'Fish' | 'Rodent' | 'Reptile' | 'Other';
@@ -156,7 +155,7 @@ export const lostFoundApi = {
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/lost-found${query ? `?${query}` : ''}`);
+    const response = await fetch(`${getApiUrl()}/lost-found${query ? `?${query}` : ''}`);
     if (!response.ok) throw new Error('Ошибка загрузки');
     return response.json();
   },
@@ -172,14 +171,14 @@ export const lostFoundApi = {
     if (params?.cityId) searchParams.set('cityId', params.cityId);
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/lost-found/map${query ? `?${query}` : ''}`);
+    const response = await fetch(`${getApiUrl()}/lost-found/map${query ? `?${query}` : ''}`);
     if (!response.ok) throw new Error('Ошибка загрузки');
     return response.json();
   },
 
   getById: async (id: string): Promise<LostFoundDetail> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found/${id}`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/${id}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!response.ok) throw new Error('Запись не найдена');
@@ -188,7 +187,7 @@ export const lostFoundApi = {
 
   getMy: async (): Promise<MyLostFoundItem[]> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found/my`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/my`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) throw new Error('Ошибка загрузки');
@@ -197,7 +196,7 @@ export const lostFoundApi = {
 
   create: async (data: CreateLostFoundRequest): Promise<LostFoundDetail> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found`, {
+    const response = await fetch(`${getApiUrl()}/lost-found`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -214,7 +213,7 @@ export const lostFoundApi = {
 
   update: async (id: string, data: UpdateLostFoundRequest): Promise<LostFoundDetail> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found/${id}`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -231,7 +230,7 @@ export const lostFoundApi = {
 
   resolve: async (id: string): Promise<void> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found/${id}/resolve`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/${id}/resolve`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -240,7 +239,7 @@ export const lostFoundApi = {
 
   delete: async (id: string): Promise<void> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found/${id}`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -252,7 +251,7 @@ export const lostFoundApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_URL}/lost-found/${id}/images`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/${id}/images`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -266,7 +265,7 @@ export const lostFoundApi = {
 
   deleteImage: async (id: string, imageId: string): Promise<void> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/lost-found/${id}/images/${imageId}`, {
+    const response = await fetch(`${getApiUrl()}/lost-found/${id}/images/${imageId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -278,7 +277,7 @@ export const lostFoundApi = {
 async function adminFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = authService.getAccessToken();
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

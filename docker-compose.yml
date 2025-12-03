@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: zooportal
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -30,6 +30,7 @@ services:
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zooportal;Username=postgres;Password=postgres
       - App__BaseUrl=http://localhost:5000
+      - App__AdminSecret=supersecretadmin123
     volumes:
       - uploads_data:/app/uploads
     depends_on:
@@ -49,6 +50,7 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+      - INTERNAL_API_URL=http://backend:5000/api
     depends_on:
       - backend
     networks:

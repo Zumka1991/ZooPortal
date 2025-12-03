@@ -33,3 +33,7 @@ public record UserDto(
     string? AvatarUrl,
     string Role
 );
+
+public record GrantAdminRequest(
+    [Required] string SecretPassword
+);

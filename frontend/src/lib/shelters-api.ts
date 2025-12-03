@@ -1,6 +1,5 @@
 import { authService } from './auth';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279/api';
+import { getApiUrl } from './api-url';
 
 export type ModerationStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -129,14 +128,14 @@ export const MODERATION_STATUS_COLORS: Record<ModerationStatus, string> = {
 // Cities API
 export const citiesApi = {
   getCities: async (): Promise<City[]> => {
-    const response = await fetch(`${API_URL}/cities`);
+    const response = await fetch(`${getApiUrl()}/cities`);
     if (!response.ok) throw new Error('Ошибка загрузки городов');
     return response.json();
   },
 
   createCity: async (name: string, region?: string): Promise<City> => {
     const token = authService.getAccessToken();
-    const response = await fetch(`${API_URL}/cities`, {
+    const response = await fetch(`${getApiUrl()}/cities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -166,13 +165,13 @@ export const sheltersApi = {
     if (params?.isVerified !== undefined) searchParams.set('isVerified', params.isVerified.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${API_URL}/shelters${query ? `?${query}` : ''}`);
+    const response = await fetch(`${getApiUrl()}/shelters${query ? `?${query}` : ''}`);
     if (!response.ok) throw new Error('Ошибка загрузки приютов');
     return response.json();
   },
 
   getShelter: async (id: string): Promise<ShelterDetail> => {
-    const response = await fetch(`${API_URL}/shelters/${id}`);
+    const response = await fetch(`${getApiUrl()}/shelters/${id}`);
     if (!response.ok) throw new Error('Приют не найден');
     return response.json();
   },
@@ -181,7 +180,7 @@ export const sheltersApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/shelters/my`, {
+    const response = await fetch(`${getApiUrl()}/shelters/my`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -199,7 +198,7 @@ export const sheltersApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/shelters`, {
+    const response = await fetch(`${getApiUrl()}/shelters`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -226,7 +225,7 @@ export const sheltersApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/shelters/${id}`, {
+    const response = await fetch(`${getApiUrl()}/shelters/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -256,7 +255,7 @@ export const sheltersApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_URL}/shelters/${id}/logo`, {
+    const response = await fetch(`${getApiUrl()}/shelters/${id}/logo`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -274,7 +273,7 @@ export const sheltersApi = {
     formData.append('file', file);
     formData.append('isMain', isMain.toString());
 
-    const response = await fetch(`${API_URL}/shelters/${id}/images`, {
+    const response = await fetch(`${getApiUrl()}/shelters/${id}/images`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -288,7 +287,7 @@ export const sheltersApi = {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
-    const response = await fetch(`${API_URL}/shelters/${id}/images/${imageId}`, {
+    const response = await fetch(`${getApiUrl()}/shelters/${id}/images/${imageId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -301,7 +300,7 @@ export const sheltersApi = {
 async function adminFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = authService.getAccessToken();
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
