@@ -47,6 +47,12 @@ export default function AdminDashboard() {
             >
               🖼️ Модерация галереи
             </Link>
+            <Link
+              href="/admin/shelters"
+              className="block px-4 py-2 bg-cyan-50 text-cyan-700 rounded hover:bg-cyan-100 transition-colors"
+            >
+              🏠 Модерация приютов
+            </Link>
           </div>
         </div>
 

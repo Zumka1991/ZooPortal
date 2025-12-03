@@ -18,6 +18,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<LostFoundImage> LostFoundImages => Set<LostFoundImage>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
+    public DbSet<City> Cities => Set<City>();
+    public DbSet<ShelterImage> ShelterImages => Set<ShelterImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,14 +34,58 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(20);
         });
 
+        // City
+        modelBuilder.Entity<City>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Region).HasMaxLength(100);
+        });
+
         // Shelter
         modelBuilder.Entity<Shelter>(entity =>
         {
             entity.Property(e => e.Name).HasMaxLength(200);
-            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.ShortDescription).HasMaxLength(500);
             entity.Property(e => e.Address).HasMaxLength(500);
             entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.Phone2).HasMaxLength(20);
             entity.Property(e => e.Email).HasMaxLength(256);
+            entity.Property(e => e.Website).HasMaxLength(500);
+            entity.Property(e => e.VkUrl).HasMaxLength(500);
+            entity.Property(e => e.TelegramUrl).HasMaxLength(500);
+            entity.Property(e => e.InstagramUrl).HasMaxLength(500);
+            entity.Property(e => e.WorkingHours).HasMaxLength(200);
+            entity.Property(e => e.DonationCardNumber).HasMaxLength(50);
+            entity.Property(e => e.DonationCardHolder).HasMaxLength(100);
+            entity.Property(e => e.DonationPhone).HasMaxLength(20);
+            entity.Property(e => e.ModerationComment).HasMaxLength(500);
+
+            entity.HasOne(e => e.City)
+                .WithMany(c => c.Shelters)
+                .HasForeignKey(e => e.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Owner)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ModeratedBy)
+                .WithMany()
+                .HasForeignKey(e => e.ModeratedById)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ShelterImage
+        modelBuilder.Entity<ShelterImage>(entity =>
+        {
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+
+            entity.HasOne(e => e.Shelter)
+                .WithMany(s => s.Images)
+                .HasForeignKey(e => e.ShelterId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Listing
