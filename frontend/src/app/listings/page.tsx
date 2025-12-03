@@ -120,8 +120,8 @@ function ListingsContent() {
       <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Объявления о животных</h1>
-            <p className="text-xl text-green-100 mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Объявления о животных</h1>
+            <p className="text-lg md:text-xl text-green-100 mb-8">
               Найдите нового друга или отдайте питомца в добрые руки
             </p>
             {isAuthenticated && (
@@ -339,8 +339,8 @@ function ListingsLoading() {
       <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Объявления о животных</h1>
-            <p className="text-xl text-green-100 mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Объявления о животных</h1>
+            <p className="text-lg md:text-xl text-green-100 mb-8">
               Найдите нового друга или отдайте питомца в добрые руки
             </p>
           </div>

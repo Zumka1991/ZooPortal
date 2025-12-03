@@ -127,7 +127,7 @@ export default async function ArticlePage({ params }: Props) {
           )}
         </div>
 
-        <h1 className="text-4xl font-bold text-gray-900 mb-6">{article.title}</h1>
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6">{article.title}</h1>
 
         <div className="flex items-center justify-between text-gray-500 pb-6 border-b">
           <div className="flex items-center gap-3">
