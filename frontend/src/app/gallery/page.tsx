@@ -4,10 +4,10 @@ import { galleryApi } from '@/lib/gallery-api';
 import { GalleryGrid } from '@/components/GalleryGrid';
 
 export const metadata: Metadata = {
-  title: 'Галерея питомцев | ZooPortal',
+  title: 'Галерея питомцев | DomZverei',
   description: 'Фотографии питомцев от нашего сообщества. Делитесь снимками своих любимцев!',
   openGraph: {
-    title: 'Галерея питомцев | ZooPortal',
+    title: 'Галерея питомцев | DomZverei',
     description: 'Фотографии питомцев от нашего сообщества.',
   },
 };

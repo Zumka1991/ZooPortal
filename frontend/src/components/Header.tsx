@@ -68,7 +68,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <span className="text-2xl">🐾</span>
-            <span className="text-xl font-bold text-green-600">ZooPortal</span>
+            <span className="text-xl font-bold text-green-600">DomZverei</span>
           </Link>
 
           {/* Desktop Navigation */}

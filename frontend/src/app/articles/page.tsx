@@ -5,10 +5,10 @@ import { articlesApi, CATEGORY_LABELS, ANIMAL_TYPE_LABELS } from '@/lib/articles
 import { ArticlesFilters } from '@/components/ArticlesFilters';
 
 export const metadata: Metadata = {
-  title: 'Статьи о животных | ZooPortal',
+  title: 'Статьи о животных | DomZverei',
   description: 'Полезные статьи по уходу за животными, воспитанию, питанию и здоровью. Советы от экспертов для владельцев домашних питомцев.',
   openGraph: {
-    title: 'Статьи о животных | ZooPortal',
+    title: 'Статьи о животных | DomZverei',
     description: 'Полезные статьи по уходу за животными, воспитанию, питанию и здоровью.',
   },
 };

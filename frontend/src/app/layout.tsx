@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ZooPortal — Портал помощи животным",
+  title: "DomZverei — Портал помощи животным",
   description: "Найди друга, помоги приюту, подари дом. Каталог приютов, объявления о животных, поиск потеряшек.",
 };
 

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const article = await articlesApi.getArticleBySlug(slug);
     return {
-      title: `${article.title} | ZooPortal`,
+      title: `${article.title} | DomZverei`,
       description: article.summary || article.content.substring(0, 160),
       openGraph: {
         title: article.title,
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: 'Статья не найдена | ZooPortal',
+      title: 'Статья не найдена | DomZverei',
     };
   }
 }

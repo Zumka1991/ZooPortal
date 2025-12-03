@@ -9,7 +9,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-2xl">🐾</span>
-              <span className="text-xl font-bold text-white">ZooPortal</span>
+              <span className="text-xl font-bold text-white">DomZverei</span>
             </div>
             <p className="text-sm">
               Портал помощи животным. Найди друга, помоги приюту, подари дом.
@@ -69,14 +69,14 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">Контакты</h3>
             <ul className="space-y-2 text-sm">
-              <li>info@zooportal.ru</li>
+              <li>info@domzverei.ru</li>
               <li>+7 (999) 123-45-67</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-sm text-center">
-          <p>&copy; {new Date().getFullYear()} ZooPortal. Все права защищены.</p>
+          <p>&copy; {new Date().getFullYear()} DomZverei. Все права защищены.</p>
         </div>
       </div>
     </footer>

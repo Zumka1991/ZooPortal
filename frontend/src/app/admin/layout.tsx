@@ -55,7 +55,7 @@ export default function AdminLayout({
       <div className="fixed inset-y-0 left-0 w-64 bg-gray-900">
         <div className="flex items-center justify-center h-16 bg-gray-800">
           <Link href="/admin" className="text-white text-xl font-bold">
-            ZooPortal Admin
+            DomZverei Admin
           </Link>
         </div>
         <nav className="mt-8">
