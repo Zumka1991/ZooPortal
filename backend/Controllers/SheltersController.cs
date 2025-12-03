@@ -57,6 +57,7 @@ public class SheltersController : ControllerBase
             var searchLower = search.ToLower();
             query = query.Where(s =>
                 s.Name.ToLower().Contains(searchLower) ||
+                s.Address.ToLower().Contains(searchLower) ||
                 (s.ShortDescription != null && s.ShortDescription.ToLower().Contains(searchLower)) ||
                 s.City.Name.ToLower().Contains(searchLower));
         }

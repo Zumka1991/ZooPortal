@@ -7,6 +7,39 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { sheltersApi, citiesApi, ShelterListItem, City } from '@/lib/shelters-api';
 import { useAuth } from '@/components/AuthProvider';
 
+// Функция для подсветки совпадений
+function highlightText(text: string, search: string): React.ReactNode {
+  if (!search.trim()) return text;
+
+  const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+
+  return parts.map((part, i) =>
+    regex.test(part) ? (
+      <mark key={i} className="bg-yellow-200 text-gray-900 rounded px-0.5">{part}</mark>
+    ) : (
+      part
+    )
+  );
+}
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function SheltersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,10 +53,12 @@ export default function SheltersPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [cityId, setCityId] = useState(searchParams.get('cityId') || '');
-  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
 
-  const loadData = useCallback(async () => {
+  // Debounced search - ждём 300мс после ввода
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  const loadData = useCallback(async (searchQuery: string) => {
     setIsLoading(true);
     setError('');
 
@@ -33,7 +68,7 @@ export default function SheltersPage() {
           page,
           pageSize: 12,
           cityId: cityId || undefined,
-          search: search || undefined,
+          search: searchQuery || undefined,
         }),
         citiesApi.getCities(),
       ]);
@@ -47,36 +82,39 @@ export default function SheltersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, cityId, search]);
+  }, [page, cityId]);
 
+  // Загружаем данные при изменении debounced search
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(debouncedSearch);
+  }, [debouncedSearch, loadData]);
 
-  const updateUrl = (newPage: number, newCityId: string, newSearch: string) => {
+  // Обновляем URL при изменении фильтров (без лишних перезагрузок)
+  useEffect(() => {
     const params = new URLSearchParams();
-    if (newPage > 1) params.set('page', newPage.toString());
-    if (newCityId) params.set('cityId', newCityId);
-    if (newSearch) params.set('search', newSearch);
+    if (page > 1) params.set('page', page.toString());
+    if (cityId) params.set('cityId', cityId);
+    if (debouncedSearch) params.set('search', debouncedSearch);
     const query = params.toString();
-    router.push(`/shelters${query ? `?${query}` : ''}`);
-  };
+    const newUrl = `/shelters${query ? `?${query}` : ''}`;
 
-  const handleSearch = () => {
-    setSearch(searchInput);
-    setPage(1);
-    updateUrl(1, cityId, searchInput);
-  };
+    // Используем replace чтобы не засорять историю браузера при каждом символе
+    router.replace(newUrl, { scroll: false });
+  }, [page, cityId, debouncedSearch, router]);
 
   const handleCityChange = (newCityId: string) => {
     setCityId(newCityId);
     setPage(1);
-    updateUrl(1, newCityId, search);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    updateUrl(newPage, cityId, search);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setPage(1);
   };
 
   return (
@@ -106,15 +144,27 @@ export default function SheltersPage() {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-4 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <input
                 type="text"
-                placeholder="Поиск по названию или адресу..."
+                placeholder="Поиск по названию, адресу или описанию..."
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
+              {searchInput && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
             <select
               value={cityId}
@@ -128,18 +178,35 @@ export default function SheltersPage() {
                 </option>
               ))}
             </select>
-            <button
-              onClick={handleSearch}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Найти
-            </button>
           </div>
+          {searchInput && (
+            <p className="text-sm text-gray-500 mt-2">
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Поиск...
+                </span>
+              ) : (
+                <>Поиск по: <span className="font-medium">&quot;{searchInput}&quot;</span></>
+              )}
+            </p>
+          )}
         </div>
 
         {/* Stats */}
         <p className="text-gray-600 mb-6">
           Найдено приютов: <span className="font-semibold text-gray-900">{totalCount}</span>
+          {debouncedSearch && (
+            <button
+              onClick={handleClearSearch}
+              className="ml-3 text-blue-600 hover:text-blue-800 text-sm"
+            >
+              Сбросить поиск
+            </button>
+          )}
         </p>
 
         {error && (
@@ -157,8 +224,17 @@ export default function SheltersPage() {
             <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <p className="text-gray-500 text-lg mb-4">Приюты не найдены</p>
-            {isAuthenticated && (
+            <p className="text-gray-500 text-lg mb-4">
+              {debouncedSearch ? 'По вашему запросу ничего не найдено' : 'Приюты не найдены'}
+            </p>
+            {debouncedSearch ? (
+              <button
+                onClick={handleClearSearch}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Сбросить поиск
+              </button>
+            ) : isAuthenticated && (
               <Link
                 href="/shelters/new"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -206,20 +282,24 @@ export default function SheltersPage() {
                 {/* Content */}
                 <div className="p-5">
                   <h2 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {shelter.name}
+                    {highlightText(shelter.name, debouncedSearch)}
                   </h2>
 
-                  <div className="flex items-center text-gray-500 text-sm mb-3">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center text-gray-500 text-sm mb-1">
+                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    {shelter.city.name}
+                    <span>{highlightText(shelter.city.name, debouncedSearch)}</span>
                   </div>
+
+                  <p className="text-gray-400 text-xs mb-3">
+                    {highlightText(shelter.address, debouncedSearch)}
+                  </p>
 
                   {shelter.shortDescription && (
                     <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-                      {shelter.shortDescription}
+                      {highlightText(shelter.shortDescription, debouncedSearch)}
                     </p>
                   )}
 
