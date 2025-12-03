@@ -22,6 +22,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ShelterImage> ShelterImages => Set<ShelterImage>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<ListingLike> ListingLikes => Set<ListingLike>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -228,6 +230,54 @@ public class ApplicationDbContext : DbContext
                 .WithMany(l => l.Likes)
                 .HasForeignKey(e => e.ListingId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Conversation
+        modelBuilder.Entity<Conversation>(entity =>
+        {
+            entity.Property(e => e.LastMessageText).HasMaxLength(500);
+
+            // Уникальный индекс на пару участников
+            entity.HasIndex(e => new { e.User1Id, e.User2Id });
+
+            entity.HasOne(e => e.User1)
+                .WithMany()
+                .HasForeignKey(e => e.User1Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.User2)
+                .WithMany()
+                .HasForeignKey(e => e.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Listing)
+                .WithMany()
+                .HasForeignKey(e => e.ListingId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.LostFound)
+                .WithMany()
+                .HasForeignKey(e => e.LostFoundId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Message
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.Property(e => e.Text).HasMaxLength(2000);
+
+            entity.HasOne(e => e.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(e => e.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Sender)
+                .WithMany()
+                .HasForeignKey(e => e.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.ConversationId);
+            entity.HasIndex(e => new { e.ConversationId, e.CreatedAt });
         });
     }
 

@@ -15,6 +15,7 @@ import {
   MODERATION_STATUS_LABELS,
   MODERATION_STATUS_COLORS,
 } from '@/lib/lost-found-api';
+import { messagesApi } from '@/lib/messages-api';
 
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
@@ -32,6 +33,7 @@ export default function LostFoundDetailPage({ params }: { params: Promise<{ id: 
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isStartingChat, setIsStartingChat] = useState(false);
 
   const isOwner = user && item && user.id === item.user.id;
 
@@ -96,6 +98,28 @@ export default function LostFoundDetailPage({ params }: { params: Promise<{ id: 
       loadItem();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка удаления');
+    }
+  };
+
+  const handleStartChat = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (!item) return;
+
+    setIsStartingChat(true);
+    try {
+      const conversation = await messagesApi.startConversation({
+        userId: item.user.id,
+        lostFoundId: id,
+      });
+      router.push(`/messages/${conversation.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка');
+    } finally {
+      setIsStartingChat(false);
     }
   };
 
@@ -341,7 +365,7 @@ export default function LostFoundDetailPage({ params }: { params: Promise<{ id: 
           {/* Contact */}
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Контакт</h2>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                   <span className="text-green-700 font-medium">
@@ -373,6 +397,19 @@ export default function LostFoundDetailPage({ params }: { params: Promise<{ id: 
                     Показать телефон
                   </button>
                 )
+              )}
+
+              {!isOwner && (
+                <button
+                  onClick={handleStartChat}
+                  disabled={isStartingChat}
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-green-600 text-green-600 rounded-lg hover:bg-green-50 disabled:opacity-50"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  {isStartingChat ? 'Загрузка...' : 'Написать'}
+                </button>
               )}
             </div>
           </div>

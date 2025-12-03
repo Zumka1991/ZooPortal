@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
+import { messagesApi } from '@/lib/messages-api';
+import { useChat } from '@/lib/use-chat';
 
 const navItems = [
   { href: '/', label: 'Главная' },
@@ -18,8 +20,28 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { user, isLoading, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Moderator';
+
+  // SignalR для обновления счетчика в реальном времени
+  useChat({
+    onNewMessage: () => {
+      setUnreadCount((prev) => prev + 1);
+    },
+    onNewConversation: () => {
+      setUnreadCount((prev) => prev + 1);
+    },
+  });
+
+  // Загрузка количества непрочитанных при авторизации
+  useEffect(() => {
+    if (user) {
+      messagesApi.getUnreadCount().then(setUnreadCount).catch(() => {});
+    } else {
+      setUnreadCount(0);
+    }
+  }, [user]);
 
   // Закрываем выпадающее меню при клике вне его
   useEffect(() => {
@@ -136,6 +158,21 @@ export default function Header() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         Фото моих питомцев
+                      </Link>
+                      <Link
+                        href="/messages"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Сообщения
+                        {unreadCount > 0 && (
+                          <span className="ml-auto bg-green-600 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
                       </Link>
                     </div>
 
@@ -276,6 +313,18 @@ export default function Header() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Фото моих питомцев
+                  </Link>
+                  <Link
+                    href="/messages"
+                    className="flex items-center justify-between text-gray-600 hover:text-green-600 hover:bg-gray-50 transition-colors py-3 px-2 rounded-lg"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span>Сообщения</span>
+                    {unreadCount > 0 && (
+                      <span className="bg-green-600 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                   </Link>
 
                   {isAdmin && (

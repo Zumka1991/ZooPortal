@@ -16,6 +16,7 @@ import {
   formatAge,
   formatPrice,
 } from '@/lib/listings-api';
+import { messagesApi } from '@/lib/messages-api';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function ListingDetailPage() {
@@ -35,6 +36,7 @@ export default function ListingDetailPage() {
   const [likesCount, setLikesCount] = useState(0);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isStartingChat, setIsStartingChat] = useState(false);
 
   useEffect(() => {
     const loadListing = async () => {
@@ -112,6 +114,28 @@ export default function ListingDetailPage() {
       console.error('Error toggling like:', err);
     } finally {
       setIsLikeLoading(false);
+    }
+  };
+
+  const handleStartChat = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    if (!listing) return;
+
+    setIsStartingChat(true);
+    try {
+      const conversation = await messagesApi.startConversation({
+        userId: listing.owner.id,
+        listingId: id,
+      });
+      router.push(`/messages/${conversation.id}`);
+    } catch (err) {
+      console.error('Error starting chat:', err);
+    } finally {
+      setIsStartingChat(false);
     }
   };
 
@@ -284,6 +308,22 @@ export default function ListingDetailPage() {
                   </span>
                 )}
               </button>
+
+              {/* Write Message Button */}
+              {!isOwner && (
+                <button
+                  onClick={handleStartChat}
+                  disabled={isStartingChat}
+                  className="w-full mb-3 px-4 py-3 border-2 border-green-600 text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-colors disabled:opacity-50"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    {isStartingChat ? 'Загрузка...' : 'Написать'}
+                  </span>
+                </button>
+              )}
 
               {/* Like and Favorite Buttons */}
               <div className="flex gap-3 mb-3">
