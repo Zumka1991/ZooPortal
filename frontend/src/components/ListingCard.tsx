@@ -12,6 +12,7 @@ import {
   formatAge,
   formatPrice,
   favoritesApi,
+  likesApi,
 } from '@/lib/listings-api';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -24,7 +25,10 @@ interface ListingCardProps {
 export default function ListingCard({ listing, onFavoriteChange, showStatus = false }: ListingCardProps) {
   const { isAuthenticated } = useAuth();
   const [isFavorite, setIsFavorite] = useState(listing.isFavorite);
+  const [isLiked, setIsLiked] = useState(listing.isLiked);
+  const [likesCount, setLikesCount] = useState(listing.likesCount);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,6 +53,32 @@ export default function ListingCard({ listing, onFavoriteChange, showStatus = fa
       console.error('Error toggling favorite:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      return;
+    }
+
+    setIsLikeLoading(true);
+    try {
+      if (isLiked) {
+        const result = await likesApi.unlike(listing.id);
+        setIsLiked(false);
+        setLikesCount(result.likesCount);
+      } else {
+        const result = await likesApi.like(listing.id);
+        setIsLiked(true);
+        setLikesCount(result.likesCount);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLikeLoading(false);
     }
   };
 
@@ -144,22 +174,50 @@ export default function ListingCard({ listing, onFavoriteChange, showStatus = fa
             <span>{listing.city.name}</span>
           </div>
 
-          {/* Price */}
+          {/* Price and Likes */}
           <div className="flex items-center justify-between">
             <span className={`font-bold ${listing.type === 'GiveAway' ? 'text-purple-600' : 'text-green-600'}`}>
               {formatPrice(listing.price, listing.type)}
             </span>
 
-            {showStatus && listing.status !== 'Active' && (
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                listing.status === 'Moderation' ? 'bg-yellow-100 text-yellow-800' :
-                listing.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
-                'bg-red-100 text-red-800'
-              }`}>
-                {listing.status === 'Moderation' ? 'На модерации' :
-                 listing.status === 'Closed' ? 'Закрыто' : 'Истёк срок'}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Like Button */}
+              <button
+                onClick={handleLikeClick}
+                disabled={isLikeLoading || !isAuthenticated}
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-colors ${
+                  isLiked
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                } ${!isAuthenticated ? 'cursor-default' : ''}`}
+              >
+                <svg
+                  className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`}
+                  fill={isLiked ? 'currentColor' : 'none'}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+                <span>{likesCount}</span>
+              </button>
+
+              {showStatus && listing.status !== 'Active' && (
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  listing.status === 'Moderation' ? 'bg-yellow-100 text-yellow-800' :
+                  listing.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {listing.status === 'Moderation' ? 'На модерации' :
+                   listing.status === 'Closed' ? 'Закрыто' : 'Истёк срок'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

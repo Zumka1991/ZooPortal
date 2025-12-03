@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -40,7 +40,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export default function SheltersPage() {
+function SheltersContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
@@ -349,5 +349,33 @@ export default function SheltersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function SheltersLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Приюты для животных</h1>
+          <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
+            Найдите приют рядом с вами и помогите бездомным животным обрести дом
+          </p>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SheltersPage() {
+  return (
+    <Suspense fallback={<SheltersLoading />}>
+      <SheltersContent />
+    </Suspense>
   );
 }

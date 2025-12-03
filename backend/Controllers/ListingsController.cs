@@ -55,10 +55,18 @@ public class ListingsController : ControllerBase
                 .ToListAsync()
             : [];
 
+        var likeIds = userId.HasValue
+            ? await _context.ListingLikes
+                .Where(l => l.UserId == userId.Value)
+                .Select(l => l.ListingId)
+                .ToListAsync()
+            : [];
+
         var query = _context.Listings
             .Include(l => l.City)
             .Include(l => l.Images)
             .Include(l => l.Shelter)
+            .Include(l => l.Likes)
             .Where(l => l.ModerationStatus == ModerationStatus.Approved
                      && l.Status == ListingStatus.Active
                      && l.ExpiresAt > DateTime.UtcNow);
@@ -95,7 +103,7 @@ public class ListingsController : ControllerBase
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(l => MapToListDto(l, favoriteIds))
+            .Select(l => MapToListDto(l, favoriteIds, likeIds))
             .ToListAsync();
 
         return Ok(new ListingsPagedResponse(items, totalCount, page, pageSize, totalPages));
@@ -113,11 +121,19 @@ public class ListingsController : ControllerBase
                 .ToListAsync()
             : [];
 
+        var likeIds = userId.HasValue
+            ? await _context.ListingLikes
+                .Where(l => l.UserId == userId.Value && l.ListingId == id)
+                .Select(l => l.ListingId)
+                .ToListAsync()
+            : [];
+
         var listing = await _context.Listings
             .Include(l => l.City)
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (listing == null)
@@ -132,7 +148,7 @@ public class ListingsController : ControllerBase
                 return NotFound(new { message = "Объявление не найдено" });
         }
 
-        return Ok(MapToDetailDto(listing, favoriteIds));
+        return Ok(MapToDetailDto(listing, favoriteIds, likeIds));
     }
 
     // GET: api/listings/{id}/contact
@@ -169,10 +185,16 @@ public class ListingsController : ControllerBase
             .Select(f => f.ListingId)
             .ToListAsync();
 
+        var likeIds = await _context.ListingLikes
+            .Where(l => l.UserId == userId.Value)
+            .Select(l => l.ListingId)
+            .ToListAsync();
+
         var query = _context.Listings
             .Include(l => l.City)
             .Include(l => l.Images)
             .Include(l => l.Shelter)
+            .Include(l => l.Likes)
             .Where(l => l.UserId == userId.Value);
 
         if (status.HasValue)
@@ -186,7 +208,7 @@ public class ListingsController : ControllerBase
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(l => MapToListDto(l, favoriteIds))
+            .Select(l => MapToListDto(l, favoriteIds, likeIds))
             .ToListAsync();
 
         return Ok(new ListingsPagedResponse(items, totalCount, page, pageSize, totalPages));
@@ -249,7 +271,7 @@ public class ListingsController : ControllerBase
         if (shelter != null)
             await _context.Entry(listing).Reference(l => l.Shelter).LoadAsync();
 
-        return CreatedAtAction(nameof(GetListing), new { id = listing.Id }, MapToDetailDto(listing, []));
+        return CreatedAtAction(nameof(GetListing), new { id = listing.Id }, MapToDetailDto(listing, [], []));
     }
 
     // PUT: api/listings/{id}
@@ -266,6 +288,7 @@ public class ListingsController : ControllerBase
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (listing == null)
@@ -297,7 +320,12 @@ public class ListingsController : ControllerBase
             .Select(f => f.ListingId)
             .ToListAsync();
 
-        return Ok(MapToDetailDto(listing, favoriteIds));
+        var likeIds = await _context.ListingLikes
+            .Where(l => l.UserId == userId.Value && l.ListingId == id)
+            .Select(l => l.ListingId)
+            .ToListAsync();
+
+        return Ok(MapToDetailDto(listing, favoriteIds, likeIds));
     }
 
     // POST: api/listings/{id}/images
@@ -314,6 +342,7 @@ public class ListingsController : ControllerBase
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (listing == null)
@@ -345,7 +374,12 @@ public class ListingsController : ControllerBase
             .Select(f => f.ListingId)
             .ToListAsync();
 
-        return Ok(MapToDetailDto(listing, favoriteIds));
+        var likeIds = await _context.ListingLikes
+            .Where(l => l.UserId == userId.Value && l.ListingId == id)
+            .Select(l => l.ListingId)
+            .ToListAsync();
+
+        return Ok(MapToDetailDto(listing, favoriteIds, likeIds));
     }
 
     // DELETE: api/listings/{id}/images/{imageId}
@@ -394,6 +428,7 @@ public class ListingsController : ControllerBase
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (listing == null)
@@ -410,7 +445,12 @@ public class ListingsController : ControllerBase
             .Select(f => f.ListingId)
             .ToListAsync();
 
-        return Ok(MapToDetailDto(listing, favoriteIds));
+        var likeIds = await _context.ListingLikes
+            .Where(l => l.UserId == userId.Value && l.ListingId == id)
+            .Select(l => l.ListingId)
+            .ToListAsync();
+
+        return Ok(MapToDetailDto(listing, favoriteIds, likeIds));
     }
 
     // POST: api/listings/{id}/renew
@@ -427,6 +467,7 @@ public class ListingsController : ControllerBase
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (listing == null)
@@ -452,7 +493,12 @@ public class ListingsController : ControllerBase
             .Select(f => f.ListingId)
             .ToListAsync();
 
-        return Ok(MapToDetailDto(listing, favoriteIds));
+        var likeIds = await _context.ListingLikes
+            .Where(l => l.UserId == userId.Value && l.ListingId == id)
+            .Select(l => l.ListingId)
+            .ToListAsync();
+
+        return Ok(MapToDetailDto(listing, favoriteIds, likeIds));
     }
 
     // DELETE: api/listings/{id}
@@ -527,7 +573,63 @@ public class ListingsController : ControllerBase
         }
     }
 
-    private static ListingListDto MapToListDto(Listing listing, List<Guid> favoriteIds)
+    // POST: api/listings/{id}/like
+    [HttpPost("{id:guid}/like")]
+    [Authorize]
+    public async Task<ActionResult> LikeListing(Guid id)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+            return Unauthorized();
+
+        var listing = await _context.Listings.FindAsync(id);
+        if (listing == null)
+            return NotFound(new { message = "Объявление не найдено" });
+
+        var existingLike = await _context.ListingLikes
+            .FirstOrDefaultAsync(l => l.UserId == userId.Value && l.ListingId == id);
+
+        if (existingLike != null)
+            return Ok(new { message = "Уже лайкнуто" });
+
+        var like = new ListingLike
+        {
+            UserId = userId.Value,
+            ListingId = id
+        };
+
+        _context.ListingLikes.Add(like);
+        await _context.SaveChangesAsync();
+
+        var likesCount = await _context.ListingLikes.CountAsync(l => l.ListingId == id);
+
+        return Ok(new { likesCount, isLiked = true });
+    }
+
+    // DELETE: api/listings/{id}/like
+    [HttpDelete("{id:guid}/like")]
+    [Authorize]
+    public async Task<ActionResult> UnlikeListing(Guid id)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+            return Unauthorized();
+
+        var like = await _context.ListingLikes
+            .FirstOrDefaultAsync(l => l.UserId == userId.Value && l.ListingId == id);
+
+        if (like == null)
+            return Ok(new { message = "Лайк не найден" });
+
+        _context.ListingLikes.Remove(like);
+        await _context.SaveChangesAsync();
+
+        var likesCount = await _context.ListingLikes.CountAsync(l => l.ListingId == id);
+
+        return Ok(new { likesCount, isLiked = false });
+    }
+
+    private static ListingListDto MapToListDto(Listing listing, List<Guid> favoriteIds, List<Guid> likeIds)
     {
         return new ListingListDto(
             listing.Id,
@@ -543,6 +645,8 @@ public class ListingsController : ControllerBase
             listing.Status,
             listing.ModerationStatus,
             favoriteIds.Contains(listing.Id),
+            listing.Likes.Count,
+            likeIds.Contains(listing.Id),
             listing.Shelter != null
                 ? new ListingShelterDto(listing.Shelter.Id, listing.Shelter.Name, listing.Shelter.LogoUrl, listing.Shelter.IsVerified)
                 : null,
@@ -551,7 +655,7 @@ public class ListingsController : ControllerBase
         );
     }
 
-    private static ListingDetailDto MapToDetailDto(Listing listing, List<Guid> favoriteIds)
+    private static ListingDetailDto MapToDetailDto(Listing listing, List<Guid> favoriteIds, List<Guid> likeIds)
     {
         return new ListingDetailDto(
             listing.Id,
@@ -569,6 +673,8 @@ public class ListingsController : ControllerBase
             listing.ModerationComment,
             listing.ModeratedAt,
             favoriteIds.Contains(listing.Id),
+            listing.Likes.Count,
+            likeIds.Contains(listing.Id),
             new ListingOwnerDto(listing.User.Id, listing.User.Name),
             listing.Shelter != null
                 ? new ListingShelterDto(listing.Shelter.Id, listing.Shelter.Name, listing.Shelter.LogoUrl, listing.Shelter.IsVerified)

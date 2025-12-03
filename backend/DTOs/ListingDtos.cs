@@ -82,6 +82,8 @@ public record ListingListDto(
     ListingStatus Status,
     ModerationStatus ModerationStatus,
     bool IsFavorite,
+    int LikesCount,
+    bool IsLiked,
     ListingShelterDto? Shelter,
     DateTime CreatedAt,
     DateTime ExpiresAt
@@ -104,6 +106,8 @@ public record ListingDetailDto(
     string? ModerationComment,
     DateTime? ModeratedAt,
     bool IsFavorite,
+    int LikesCount,
+    bool IsLiked,
     ListingOwnerDto Owner,
     ListingShelterDto? Shelter,
     List<ListingImageDto> Images,

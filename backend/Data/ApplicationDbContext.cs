@@ -21,6 +21,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<City> Cities => Set<City>();
     public DbSet<ShelterImage> ShelterImages => Set<ShelterImage>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
+    public DbSet<ListingLike> ListingLikes => Set<ListingLike>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -198,6 +199,22 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(e => e.Listing)
                 .WithMany()
+                .HasForeignKey(e => e.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ListingLike
+        modelBuilder.Entity<ListingLike>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.ListingId }).IsUnique();
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.ListingLikes)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Listing)
+                .WithMany(l => l.Likes)
                 .HasForeignKey(e => e.ListingId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

@@ -36,6 +36,7 @@ public class Listing : BaseEntity
 
     // Navigation
     public ICollection<ListingImage> Images { get; set; } = [];
+    public ICollection<ListingLike> Likes { get; set; } = [];
 }
 
 public class ListingImage : BaseEntity

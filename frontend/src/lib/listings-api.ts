@@ -48,6 +48,8 @@ export interface ListingListItem {
   status: ListingStatus;
   moderationStatus: ModerationStatus;
   isFavorite: boolean;
+  likesCount: number;
+  isLiked: boolean;
   shelter?: ListingShelter;
   createdAt: string;
   expiresAt: string;
@@ -477,6 +479,53 @@ export const favoritesApi = {
     });
 
     if (!response.ok) return 0;
+    return response.json();
+  },
+};
+
+// === Likes API ===
+
+export interface LikeResponse {
+  likesCount: number;
+  isLiked: boolean;
+}
+
+export const likesApi = {
+  like: async (listingId: string): Promise<LikeResponse> => {
+    const token = authService.getAccessToken();
+    if (!token) throw new Error('Не авторизован');
+
+    const response = await fetch(`${API_URL}/listings/${listingId}/like`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.status === 401) {
+      const refreshed = await authService.refresh();
+      if (refreshed) return likesApi.like(listingId);
+      throw new Error('Не авторизован');
+    }
+
+    if (!response.ok) throw new Error('Ошибка');
+    return response.json();
+  },
+
+  unlike: async (listingId: string): Promise<LikeResponse> => {
+    const token = authService.getAccessToken();
+    if (!token) throw new Error('Не авторизован');
+
+    const response = await fetch(`${API_URL}/listings/${listingId}/like`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.status === 401) {
+      const refreshed = await authService.refresh();
+      if (refreshed) return likesApi.unlike(listingId);
+      throw new Error('Не авторизован');
+    }
+
+    if (!response.ok) throw new Error('Ошибка');
     return response.json();
   },
 };

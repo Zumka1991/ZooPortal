@@ -42,6 +42,7 @@ public class AdminListingsController : ControllerBase
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .AsQueryable();
 
         if (status.HasValue)
@@ -194,6 +195,7 @@ public class AdminListingsController : ControllerBase
             .Include(l => l.User)
             .Include(l => l.Shelter)
             .Include(l => l.Images)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (listing == null)
@@ -233,6 +235,8 @@ public class AdminListingsController : ControllerBase
             listing.ModerationComment,
             listing.ModeratedAt,
             false, // В админке не нужен isFavorite
+            listing.Likes.Count,
+            false, // В админке не нужен isLiked
             new ListingOwnerDto(listing.User.Id, listing.User.Name),
             listing.Shelter != null
                 ? new ListingShelterDto(listing.Shelter.Id, listing.Shelter.Name, listing.Shelter.LogoUrl, listing.Shelter.IsVerified)

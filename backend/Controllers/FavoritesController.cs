@@ -43,6 +43,8 @@ public class FavoritesController : ControllerBase
                 .ThenInclude(l => l.Images)
             .Include(f => f.Listing)
                 .ThenInclude(l => l.Shelter)
+            .Include(f => f.Listing)
+                .ThenInclude(l => l.Likes)
             .Where(f => f.UserId == userId.Value)
             .OrderByDescending(f => f.CreatedAt);
 
@@ -55,7 +57,10 @@ public class FavoritesController : ControllerBase
             .Select(f => f.Listing)
             .ToListAsync();
 
-        var favoriteIds = favoriteListings.Select(l => l.Id).ToList();
+        var likeIds = await _context.ListingLikes
+            .Where(l => l.UserId == userId.Value)
+            .Select(l => l.ListingId)
+            .ToListAsync();
 
         var items = favoriteListings.Select(l => new ListingListDto(
             l.Id,
@@ -71,6 +76,8 @@ public class FavoritesController : ControllerBase
             l.Status,
             l.ModerationStatus,
             true, // Все в избранном
+            l.Likes.Count,
+            likeIds.Contains(l.Id),
             l.Shelter != null
                 ? new ListingShelterDto(l.Shelter.Id, l.Shelter.Name, l.Shelter.LogoUrl, l.Shelter.IsVerified)
                 : null,
