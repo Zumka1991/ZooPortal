@@ -133,16 +133,27 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<LostFound>(entity =>
         {
             entity.Property(e => e.Title).HasMaxLength(200);
-            entity.Property(e => e.City).HasMaxLength(100);
             entity.Property(e => e.Address).HasMaxLength(500);
             entity.Property(e => e.Breed).HasMaxLength(100);
             entity.Property(e => e.Color).HasMaxLength(100);
+            entity.Property(e => e.DistinctiveFeatures).HasMaxLength(500);
             entity.Property(e => e.ContactPhone).HasMaxLength(20);
+            entity.Property(e => e.ModerationComment).HasMaxLength(500);
+
+            entity.HasOne(e => e.City)
+                .WithMany()
+                .HasForeignKey(e => e.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(e => e.User)
                 .WithMany(u => u.LostFoundPosts)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ModeratedBy)
+                .WithMany()
+                .HasForeignKey(e => e.ModeratedById)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // LostFoundImage

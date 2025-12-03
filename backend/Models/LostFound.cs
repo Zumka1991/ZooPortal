@@ -8,13 +8,24 @@ public class LostFound : BaseEntity
     public required AnimalType AnimalType { get; set; }
     public string? Breed { get; set; }
     public string? Color { get; set; }
-    public required string City { get; set; }
+    public string? DistinctiveFeatures { get; set; } // Особые приметы
     public string? Address { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public DateTime EventDate { get; set; }
     public string? ContactPhone { get; set; }
     public LostFoundStatus Status { get; set; } = LostFoundStatus.Active;
+
+    // Город (связь со справочником)
+    public Guid CityId { get; set; }
+    public City City { get; set; } = null!;
+
+    // Модерация
+    public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
+    public string? ModerationComment { get; set; }
+    public DateTime? ModeratedAt { get; set; }
+    public Guid? ModeratedById { get; set; }
+    public User? ModeratedBy { get; set; }
 
     // Foreign keys
     public Guid UserId { get; set; }
