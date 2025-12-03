@@ -67,15 +67,26 @@ builder.Services.AddAuthentication(options =>
 });
 
 // CORS для Next.js frontend
-var frontendUrl = builder.Configuration["App:FrontendUrl"] ?? "http://localhost:3000";
+var frontendUrl = builder.Configuration["App:FrontendUrl"];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins(frontendUrl.Split(',', StringSplitOptions.RemoveEmptyEntries))
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        if (string.IsNullOrEmpty(frontendUrl))
+        {
+            // Разрешить все origins если не указан конкретный
+            policy.SetIsOriginAllowed(_ => true)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            policy.WithOrigins(frontendUrl.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
     });
 });
 
