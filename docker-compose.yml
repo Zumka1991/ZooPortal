@@ -29,6 +29,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zooportal;Username=postgres;Password=postgres
+      - App__BaseUrl=http://localhost:5000
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,3 +60,4 @@ networks:
 
 volumes:
   postgres_data:
+  uploads_data:
