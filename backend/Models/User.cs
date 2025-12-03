@@ -17,6 +17,7 @@ public class User : BaseEntity
     // Navigation
     public ICollection<Listing> Listings { get; set; } = [];
     public ICollection<LostFound> LostFoundPosts { get; set; } = [];
+    public ICollection<GalleryImage> GalleryImages { get; set; } = [];
 }
 
 public enum UserRole

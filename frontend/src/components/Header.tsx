@@ -9,6 +9,7 @@ const navItems = [
   { href: '/shelters', label: 'Приюты' },
   { href: '/listings', label: 'Объявления' },
   { href: '/lost-found', label: 'Потеряшки' },
+  { href: '/gallery', label: 'Галерея' },
   { href: '/articles', label: 'Статьи' },
 ];
 

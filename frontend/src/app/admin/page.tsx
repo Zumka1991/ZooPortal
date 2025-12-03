@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 const stats = [
   { name: 'Всего статей', value: '—', href: '/admin/articles' },
+  { name: 'Галерея', value: '—', href: '/admin/gallery', highlight: true },
   { name: 'Пользователей', value: '—', href: '/admin/users' },
   { name: 'Приютов', value: '—', href: '/admin/shelters' },
-  { name: 'Объявлений', value: '—', href: '/admin/listings' },
 ];
 
 export default function AdminDashboard() {
@@ -40,6 +40,12 @@ export default function AdminDashboard() {
               className="block px-4 py-2 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
             >
               ➕ Добавить приют
+            </Link>
+            <Link
+              href="/admin/gallery"
+              className="block px-4 py-2 bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors"
+            >
+              🖼️ Модерация галереи
             </Link>
           </div>
         </div>

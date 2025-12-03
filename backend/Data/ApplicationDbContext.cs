@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<LostFound> LostFoundPosts => Set<LostFound>();
     public DbSet<LostFoundImage> LostFoundImages => Set<LostFoundImage>();
     public DbSet<Article> Articles => Set<Article>();
+    public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -107,6 +108,25 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // GalleryImage
+        modelBuilder.Entity<GalleryImage>(entity =>
+        {
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+            entity.Property(e => e.ModerationComment).HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.GalleryImages)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ModeratedBy)
+                .WithMany()
+                .HasForeignKey(e => e.ModeratedById)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 
