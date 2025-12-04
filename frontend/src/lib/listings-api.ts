@@ -224,7 +224,15 @@ export const listingsApi = {
     if (params?.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
     const query = searchParams.toString();
-    const response = await fetch(`${getApiUrl()}/listings${query ? `?${query}` : ''}`);
+
+    // Include auth token if available to get correct isLiked/isFavorite status
+    const token = authService.getAccessToken();
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${getApiUrl()}/listings${query ? `?${query}` : ''}`, { headers });
     if (!response.ok) throw new Error('Ошибка загрузки объявлений');
     return response.json();
   },

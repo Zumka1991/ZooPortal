@@ -134,7 +134,15 @@ class PetsApi {
     if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
 
     const url = `${this.baseUrl}/pets${queryParams.toString() ? `?${queryParams}` : ''}`;
-    const response = await fetch(url);
+
+    // Include auth token if available to get correct isLiked status
+    const token = authService.getAccessToken();
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, { headers });
 
     if (!response.ok) {
       throw new Error('Failed to fetch pets');

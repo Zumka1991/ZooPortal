@@ -26,7 +26,7 @@ function useDebounce<T>(value: T, delay: number): T {
 function PetsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [pets, setPets] = useState<PetListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,9 +57,12 @@ function PetsContent() {
     }
   }, [page, animalType, debouncedSearch]);
 
+  // Load pets when auth state is ready and when filters change
   useEffect(() => {
-    loadPets();
-  }, [loadPets]);
+    if (!authLoading) {
+      loadPets();
+    }
+  }, [loadPets, authLoading, isAuthenticated]);
 
   useEffect(() => {
     const params = new URLSearchParams();

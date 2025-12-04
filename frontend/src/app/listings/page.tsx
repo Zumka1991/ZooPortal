@@ -34,7 +34,7 @@ function useDebounce<T>(value: T, delay: number): T {
 function ListingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [listings, setListings] = useState<ListingListItem[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -70,9 +70,12 @@ function ListingsContent() {
     }
   }, [page, type, animalType, cityId, debouncedSearch]);
 
+  // Load listings when auth state is ready and when filters change
   useEffect(() => {
-    loadListings();
-  }, [loadListings]);
+    if (!authLoading) {
+      loadListings();
+    }
+  }, [loadListings, authLoading, isAuthenticated]);
 
   useEffect(() => {
     citiesApi.getCities().then(setCities).catch(console.error);
