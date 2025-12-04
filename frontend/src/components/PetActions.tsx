@@ -28,14 +28,17 @@ export default function PetActions({
 
   // Fetch actual like status when authenticated user mounts the component
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      petsApi.getLikeStatus(petId)
-        .then(result => {
+    const fetchLikeStatus = async () => {
+      if (!authLoading && isAuthenticated) {
+        const result = await petsApi.getLikeStatus(petId);
+        if (result) {
           setIsLiked(result.isLiked);
           setLikesCount(result.likesCount);
-        })
-        .catch(err => console.error('Error fetching like status:', err));
-    }
+        }
+      }
+    };
+
+    fetchLikeStatus();
   }, [petId, isAuthenticated, authLoading]);
 
   const handleLikeToggle = async () => {

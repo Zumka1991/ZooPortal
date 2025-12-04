@@ -39,14 +39,17 @@ export default function ListingActions({
 
   // Fetch actual like status when authenticated user mounts the component
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      likesApi.getStatus(listingId)
-        .then(result => {
+    const fetchLikeStatus = async () => {
+      if (!authLoading && isAuthenticated) {
+        const result = await likesApi.getStatus(listingId);
+        if (result) {
           setIsLiked(result.isLiked);
           setLikesCount(result.likesCount);
-        })
-        .catch(err => console.error('Error fetching like status:', err));
-    }
+        }
+      }
+    };
+
+    fetchLikeStatus();
   }, [listingId, isAuthenticated, authLoading]);
 
   const handleShowPhone = async () => {

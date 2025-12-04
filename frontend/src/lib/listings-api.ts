@@ -528,9 +528,9 @@ export const likesApi = {
     return response.json();
   },
 
-  getStatus: async (listingId: string): Promise<LikeResponse> => {
+  getStatus: async (listingId: string): Promise<LikeResponse | null> => {
     const token = authService.getAccessToken();
-    if (!token) throw new Error('Не авторизован');
+    if (!token) return null;
 
     const response = await fetch(`${getApiUrl()}/listings/${listingId}/like-status`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -539,10 +539,10 @@ export const likesApi = {
     if (response.status === 401) {
       const refreshed = await authService.refresh();
       if (refreshed) return likesApi.getStatus(listingId);
-      throw new Error('Не авторизован');
+      return null;
     }
 
-    if (!response.ok) throw new Error('Ошибка');
+    if (!response.ok) return null;
     return response.json();
   },
 };
