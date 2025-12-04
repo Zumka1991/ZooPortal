@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { favoritesApi, likesApi, listingsApi } from '@/lib/listings-api';
@@ -24,7 +24,7 @@ export default function ListingActions({
   price,
 }: ListingActionsProps) {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
 
   const [showPhone, setShowPhone] = useState(false);
   const [contactPhone, setContactPhone] = useState<string | null>(null);
@@ -36,6 +36,18 @@ export default function ListingActions({
   const [isStartingChat, setIsStartingChat] = useState(false);
 
   const isOwner = user?.id === ownerId;
+
+  // Fetch actual like status when authenticated user mounts the component
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      likesApi.getStatus(listingId)
+        .then(result => {
+          setIsLiked(result.isLiked);
+          setLikesCount(result.likesCount);
+        })
+        .catch(err => console.error('Error fetching like status:', err));
+    }
+  }, [listingId, isAuthenticated, authLoading]);
 
   const handleShowPhone = async () => {
     if (contactPhone) {

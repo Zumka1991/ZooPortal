@@ -397,6 +397,30 @@ class PetsApi {
     return response.json();
   }
 
+  // Get like status (for hydrating client state)
+  async getLikeStatus(petId: string): Promise<{ likesCount: number; isLiked: boolean }> {
+    const token = authService.getAccessToken();
+    if (!token) throw new Error('Not authenticated');
+
+    const response = await fetch(`${this.baseUrl}/pets/${petId}/like-status`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response.status === 401) {
+      const refreshed = await authService.refresh();
+      if (refreshed) return this.getLikeStatus(petId);
+      throw new Error('Not authenticated');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to get like status');
+    }
+
+    return response.json();
+  }
+
   // Unlike pet
   async unlikePet(petId: string): Promise<{ likesCount: number; isLiked: boolean }> {
     const token = authService.getAccessToken();

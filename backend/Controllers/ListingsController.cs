@@ -646,6 +646,25 @@ public class ListingsController : ControllerBase
         return Ok(new { likesCount, isLiked = false });
     }
 
+    // GET: api/listings/{id}/like-status - Get like status (for authenticated users)
+    [HttpGet("{id:guid}/like-status")]
+    [Authorize]
+    public async Task<ActionResult> GetLikeStatus(Guid id)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+            return Unauthorized();
+
+        var listing = await _context.Listings.FirstOrDefaultAsync(l => l.Id == id);
+        if (listing == null)
+            return NotFound(new { message = "Объявление не найдено" });
+
+        var likesCount = await _context.ListingLikes.CountAsync(l => l.ListingId == id);
+        var isLiked = await _context.ListingLikes.AnyAsync(l => l.ListingId == id && l.UserId == userId.Value);
+
+        return Ok(new { likesCount, isLiked });
+    }
+
     private static ListingListDto MapToListDto(Listing listing, List<Guid> favoriteIds, List<Guid> likeIds)
     {
         return new ListingListDto(

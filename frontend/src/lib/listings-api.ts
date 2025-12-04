@@ -527,6 +527,24 @@ export const likesApi = {
     if (!response.ok) throw new Error('Ошибка');
     return response.json();
   },
+
+  getStatus: async (listingId: string): Promise<LikeResponse> => {
+    const token = authService.getAccessToken();
+    if (!token) throw new Error('Не авторизован');
+
+    const response = await fetch(`${getApiUrl()}/listings/${listingId}/like-status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.status === 401) {
+      const refreshed = await authService.refresh();
+      if (refreshed) return likesApi.getStatus(listingId);
+      throw new Error('Не авторизован');
+    }
+
+    if (!response.ok) throw new Error('Ошибка');
+    return response.json();
+  },
 };
 
 // === Admin Listings API ===

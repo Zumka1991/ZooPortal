@@ -490,6 +490,25 @@ public class PetsController : ControllerBase
         return Ok(new { likesCount, isLiked = false });
     }
 
+    // GET: api/pets/{id}/like-status - Get like status (for authenticated users)
+    [Authorize]
+    [HttpGet("{id:guid}/like-status")]
+    public async Task<IActionResult> GetLikeStatus(Guid id)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+            return Unauthorized();
+
+        var pet = await _context.Pets.FirstOrDefaultAsync(p => p.Id == id);
+        if (pet == null)
+            return NotFound(new { message = "Питомец не найден" });
+
+        var likesCount = await _context.PetLikes.CountAsync(l => l.PetId == id);
+        var isLiked = await _context.PetLikes.AnyAsync(l => l.PetId == id && l.UserId == userId.Value);
+
+        return Ok(new { likesCount, isLiked });
+    }
+
     // GET: api/pets/{id}/comments - Get comments
     [HttpGet("{id:guid}/comments")]
     public async Task<ActionResult<List<PetCommentDto>>> GetComments(Guid id)

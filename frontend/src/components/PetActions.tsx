@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { petsApi } from '@/lib/pets-api';
@@ -19,12 +19,24 @@ export default function PetActions({
   initialLikesCount,
 }: PetActionsProps) {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const isOwner = user?.id === ownerId;
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch actual like status when authenticated user mounts the component
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      petsApi.getLikeStatus(petId)
+        .then(result => {
+          setIsLiked(result.isLiked);
+          setLikesCount(result.likesCount);
+        })
+        .catch(err => console.error('Error fetching like status:', err));
+    }
+  }, [petId, isAuthenticated, authLoading]);
 
   const handleLikeToggle = async () => {
     if (!isAuthenticated) {
