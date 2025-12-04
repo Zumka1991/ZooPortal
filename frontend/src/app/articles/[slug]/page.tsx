@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 import { articlesApi, CATEGORY_LABELS, ANIMAL_TYPE_LABELS } from '@/lib/articles-api';
 
 interface Props {
@@ -44,53 +45,6 @@ export default async function ArticlePage({ params }: Props) {
       month: 'long',
       year: 'numeric',
     });
-  };
-
-  // Simple markdown-like rendering (basic)
-  const renderContent = (content: string) => {
-    return content
-      .split('\n\n')
-      .map((paragraph, index) => {
-        // Headers
-        if (paragraph.startsWith('# ')) {
-          return (
-            <h1 key={index} className="text-3xl font-bold mt-8 mb-4">
-              {paragraph.slice(2)}
-            </h1>
-          );
-        }
-        if (paragraph.startsWith('## ')) {
-          return (
-            <h2 key={index} className="text-2xl font-bold mt-6 mb-3">
-              {paragraph.slice(3)}
-            </h2>
-          );
-        }
-        if (paragraph.startsWith('### ')) {
-          return (
-            <h3 key={index} className="text-xl font-bold mt-4 mb-2">
-              {paragraph.slice(4)}
-            </h3>
-          );
-        }
-        // List items
-        if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
-          const items = paragraph.split('\n').filter((line) => line.trim());
-          return (
-            <ul key={index} className="list-disc pl-6 my-4 space-y-2">
-              {items.map((item, i) => (
-                <li key={i}>{item.slice(2)}</li>
-              ))}
-            </ul>
-          );
-        }
-        // Regular paragraph
-        return (
-          <p key={index} className="my-4 leading-relaxed">
-            {paragraph}
-          </p>
-        );
-      });
   };
 
   return (
@@ -169,8 +123,8 @@ export default async function ArticlePage({ params }: Props) {
       )}
 
       {/* Content */}
-      <div className="prose prose-lg max-w-none text-gray-800">
-        {renderContent(article.content)}
+      <div className="markdown-content max-w-none">
+        <ReactMarkdown>{article.content}</ReactMarkdown>
       </div>
 
       {/* Footer */}

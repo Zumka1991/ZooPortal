@@ -20,6 +20,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -90,7 +91,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   // Автопрокрутка к последнему сообщению
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const loadConversation = async () => {
@@ -252,7 +255,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
         {Object.entries(groupedMessages).map(([date, dayMessages]) => (
           <div key={date}>
             {/* Date separator */}

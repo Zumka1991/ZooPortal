@@ -8,6 +8,7 @@ import Link from 'next/link';
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: '📊' },
   { name: 'Статьи', href: '/admin/articles', icon: '📝' },
+  { name: 'Статические страницы', href: '/admin/static-pages', icon: '📄' },
   { name: 'Пользователи', href: '/admin/users', icon: '👥' },
   { name: 'Приюты', href: '/admin/shelters', icon: '🏠' },
   { name: 'Объявления', href: '/admin/listings', icon: '📋' },

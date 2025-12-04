@@ -89,6 +89,48 @@ export const ANIMAL_TYPES: { value: AnimalType; label: string }[] = [
   { value: 'Other', label: 'Другие' },
 ];
 
+// Static Pages
+export interface StaticPage {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  metaDescription?: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  lastEditedBy?: { id: string; name: string };
+}
+
+export interface StaticPageListItem {
+  id: string;
+  slug: string;
+  title: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface StaticPagesListResponse {
+  items: StaticPageListItem[];
+  totalCount: number;
+}
+
+export interface CreateStaticPageRequest {
+  slug: string;
+  title: string;
+  content: string;
+  metaDescription?: string;
+  isPublished?: boolean;
+}
+
+export interface UpdateStaticPageRequest {
+  title: string;
+  content: string;
+  metaDescription?: string;
+  isPublished: boolean;
+}
+
 async function adminFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = authService.getAccessToken();
 
@@ -175,5 +217,36 @@ export const adminApi = {
     return adminFetch(`/admin/articles/${id}/unpublish`, {
       method: 'POST',
     });
+  },
+
+  // Static Pages
+  staticPages: {
+    getAll: async (): Promise<StaticPagesListResponse> => {
+      return adminFetch('/admin/static-pages');
+    },
+
+    getById: async (id: string): Promise<StaticPage> => {
+      return adminFetch(`/admin/static-pages/${id}`);
+    },
+
+    create: async (data: CreateStaticPageRequest): Promise<StaticPage> => {
+      return adminFetch('/admin/static-pages', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+
+    update: async (id: string, data: UpdateStaticPageRequest): Promise<StaticPage> => {
+      return adminFetch(`/admin/static-pages/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    delete: async (id: string): Promise<void> => {
+      return adminFetch(`/admin/static-pages/${id}`, {
+        method: 'DELETE',
+      });
+    },
   },
 };

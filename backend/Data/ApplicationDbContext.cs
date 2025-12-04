@@ -24,6 +24,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ListingLike> ListingLikes => Set<ListingLike>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<StaticPage> StaticPages => Set<StaticPage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -278,6 +279,20 @@ public class ApplicationDbContext : DbContext
 
             entity.HasIndex(e => e.ConversationId);
             entity.HasIndex(e => new { e.ConversationId, e.CreatedAt });
+        });
+
+        // StaticPage
+        modelBuilder.Entity<StaticPage>(entity =>
+        {
+            entity.HasIndex(e => e.Slug).IsUnique();
+            entity.Property(e => e.Slug).HasMaxLength(100);
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.MetaDescription).HasMaxLength(500);
+
+            entity.HasOne(e => e.LastEditedBy)
+                .WithMany()
+                .HasForeignKey(e => e.LastEditedById)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 
