@@ -1,28 +1,44 @@
 'use client';
 
 import Link from 'next/link';
-
-const stats = [
-  { name: 'Всего статей', value: '—', href: '/admin/articles' },
-  { name: 'Галерея', value: '—', href: '/admin/gallery', highlight: true },
-  { name: 'Объявления', value: '—', href: '/admin/listings' },
-  { name: 'Потеряшки', value: '—', href: '/admin/lost-found' },
-  { name: 'Приютов', value: '—', href: '/admin/shelters' },
-  { name: 'Города', value: '—', href: '/admin/cities' },
-];
+import { useEffect, useState } from 'react';
+import { adminStatsApi, AdminStats } from '@/lib/admin-stats-api';
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminStatsApi.getStats()
+      .then(setStats)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const statCards = [
+    { name: 'Всего статей', value: stats?.articlesCount ?? '—', href: '/admin/articles' },
+    { name: 'Галерея', value: stats?.galleryCount ?? '—', href: '/admin/gallery' },
+    { name: 'Объявления', value: stats?.listingsCount ?? '—', href: '/admin/listings' },
+    { name: 'Потеряшки', value: stats?.lostFoundCount ?? '—', href: '/admin/lost-found' },
+    { name: 'Приютов', value: stats?.sheltersCount ?? '—', href: '/admin/shelters' },
+    { name: 'Города', value: stats?.citiesCount ?? '—', href: '/admin/cities' },
+  ];
+
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {statCards.map((stat) => (
           <Link
             key={stat.name}
             href={stat.href}
             className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
           >
             <p className="text-sm text-gray-500">{stat.name}</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+            {loading ? (
+              <div className="h-9 w-16 bg-gray-200 animate-pulse rounded mt-2"></div>
+            ) : (
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+            )}
           </Link>
         ))}
       </div>
