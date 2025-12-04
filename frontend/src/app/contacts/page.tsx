@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import { staticPagesApi } from '@/lib/static-pages-api';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const page = await staticPagesApi.getBySlug('contacts');
