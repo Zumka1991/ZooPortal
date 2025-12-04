@@ -7,19 +7,20 @@ import { petsApi } from '@/lib/pets-api';
 
 interface PetActionsProps {
   petId: string;
-  isOwner: boolean;
+  ownerId: string;
   initialIsLiked: boolean;
   initialLikesCount: number;
 }
 
 export default function PetActions({
   petId,
-  isOwner,
+  ownerId,
   initialIsLiked,
   initialLikesCount,
 }: PetActionsProps) {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isOwner = user?.id === ownerId;
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [isLoading, setIsLoading] = useState(false);

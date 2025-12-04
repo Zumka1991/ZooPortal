@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { petsApi, animalTypeLabels, genderLabels, formatAge } from '@/lib/pets-api';
 import PetComments from '@/components/PetComments';
 import PetActions from '@/components/PetActions';
-import { cookies } from 'next/headers';
 
 const ANIMAL_TYPE_ICONS: Record<string, string> = {
   Dog: '🐕', Cat: '🐈', Bird: '🐦', Fish: '🐠',
@@ -47,16 +46,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PetDetailPage({ params }: Props) {
   const { id } = await params;
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken');
 
-  let pet, isOwner = false;
+  let pet;
   try {
     pet = await petsApi.getPet(id);
-    if (token) {
-      // Check ownership (simplified)
-      isOwner = false; // Would need user context to determine
-    }
   } catch {
     notFound();
   }
@@ -154,7 +147,7 @@ export default async function PetDetailPage({ params }: Props) {
                 </div>
 
                 <div className="flex gap-3">
-                  <PetActions petId={id} isOwner={isOwner} initialIsLiked={pet.isLiked} initialLikesCount={pet.likesCount} />
+                  <PetActions petId={id} ownerId={pet.owner.id} initialIsLiked={pet.isLiked} initialLikesCount={pet.likesCount} />
                 </div>
               </div>
             </div>
