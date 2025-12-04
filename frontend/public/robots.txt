@@ -1,0 +1,19 @@
+# Robots.txt for DomZverei
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /my-pets/
+Disallow: /listings/my
+Disallow: /shelters/my
+Disallow: /lost-found/my
+Disallow: /gallery/my
+Disallow: /messages/
+Disallow: /favorites
+Disallow: /become-admin
+
+# Sitemap
+Sitemap: https://domzverei.ru/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
