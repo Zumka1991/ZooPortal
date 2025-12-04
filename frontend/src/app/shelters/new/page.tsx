@@ -13,9 +13,6 @@ export default function NewShelterPage() {
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [newCityName, setNewCityName] = useState('');
-  const [newCityRegion, setNewCityRegion] = useState('');
-  const [showNewCity, setShowNewCity] = useState(false);
 
   const [formData, setFormData] = useState<CreateShelterRequest>({
     name: '',
@@ -73,20 +70,6 @@ export default function NewShelterPage() {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: checked }));
-  };
-
-  const handleCreateCity = async () => {
-    if (!newCityName.trim()) return;
-    try {
-      const city = await citiesApi.createCity(newCityName.trim(), newCityRegion.trim() || undefined);
-      setCities(prev => [...prev, city]);
-      setFormData(prev => ({ ...prev, cityId: city.id }));
-      setNewCityName('');
-      setNewCityRegion('');
-      setShowNewCity(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка создания города');
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,57 +183,20 @@ export default function NewShelterPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Город *
                   </label>
-                  <div className="flex gap-2">
-                    <select
-                      name="cityId"
-                      value={formData.cityId}
-                      onChange={handleChange}
-                      required
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Выберите город</option>
-                      {cities.map(city => (
-                        <option key={city.id} value={city.id}>
-                          {city.name}{city.region ? `, ${city.region}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewCity(!showNewCity)}
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50"
-                      title="Добавить новый город"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                  </div>
-                  {showNewCity && (
-                    <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-2">
-                      <input
-                        type="text"
-                        value={newCityName}
-                        onChange={e => setNewCityName(e.target.value)}
-                        placeholder="Название города"
-                        className="w-full px-3 py-2 border rounded-lg text-sm"
-                      />
-                      <input
-                        type="text"
-                        value={newCityRegion}
-                        onChange={e => setNewCityRegion(e.target.value)}
-                        placeholder="Область/регион (необязательно)"
-                        className="w-full px-3 py-2 border rounded-lg text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleCreateCity}
-                        className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-                      >
-                        Добавить город
-                      </button>
-                    </div>
-                  )}
+                  <select
+                    name="cityId"
+                    value={formData.cityId}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Выберите город</option>
+                    {cities.map(city => (
+                      <option key={city.id} value={city.id}>
+                        {city.name}{city.region ? `, ${city.region}` : ''}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

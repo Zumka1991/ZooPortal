@@ -171,7 +171,21 @@ export const sheltersApi = {
   },
 
   getShelter: async (id: string): Promise<ShelterDetail> => {
-    const response = await fetch(`${getApiUrl()}/shelters/${id}`);
+    const token = authService.getAccessToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${getApiUrl()}/shelters/${id}`, {
+      headers,
+    });
+
+    if (response.status === 401 && token) {
+      const refreshed = await authService.refresh();
+      if (refreshed) return sheltersApi.getShelter(id);
+    }
+
     if (!response.ok) throw new Error('Приют не найден');
     return response.json();
   },
