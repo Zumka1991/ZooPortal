@@ -23,8 +23,8 @@ public class StatsController : ControllerBase
         var articlesCount = await _context.Articles.CountAsync(a => a.IsPublished);
         var galleryCount = await _context.GalleryImages.CountAsync(g => g.Status == Models.ModerationStatus.Approved);
         var listingsCount = await _context.Listings.CountAsync(l => l.ModerationStatus == Models.ModerationStatus.Approved);
-        var lostFoundCount = await _context.LostFound.CountAsync(l => l.ModerationStatus == Models.ModerationStatus.Approved);
-        var sheltersCount = await _context.Shelters.CountAsync(s => s.Status == Models.ModerationStatus.Approved);
+        var lostFoundCount = await _context.LostFoundPosts.CountAsync(l => l.ModerationStatus == Models.ModerationStatus.Approved);
+        var sheltersCount = await _context.Shelters.CountAsync(s => s.ModerationStatus == Models.ModerationStatus.Approved);
         var citiesCount = await _context.Cities.CountAsync();
 
         return Ok(new AdminStatsDto
