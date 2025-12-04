@@ -31,11 +31,13 @@ export interface LoginData {
 class AuthService {
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
+  private initialized = false;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
+  private ensureInitialized() {
+    if (!this.initialized && typeof window !== 'undefined') {
       this.accessToken = localStorage.getItem('accessToken');
       this.refreshToken = localStorage.getItem('refreshToken');
+      this.initialized = true;
     }
   }
 
@@ -74,6 +76,7 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
+    this.ensureInitialized();
     try {
       await fetch(`${getApiUrl()}/auth/logout`, {
         method: 'POST',
@@ -88,6 +91,7 @@ class AuthService {
   }
 
   async getMe(): Promise<User | null> {
+    this.ensureInitialized();
     if (!this.accessToken) return null;
 
     const response = await fetch(`${getApiUrl()}/auth/me`, {
@@ -110,6 +114,7 @@ class AuthService {
   }
 
   async refresh(): Promise<boolean> {
+    this.ensureInitialized();
     if (!this.refreshToken) return false;
 
     try {
@@ -134,14 +139,17 @@ class AuthService {
   }
 
   getAccessToken(): string | null {
+    this.ensureInitialized();
     return this.accessToken;
   }
 
   isAuthenticated(): boolean {
+    this.ensureInitialized();
     return !!this.accessToken;
   }
 
   async grantAdmin(secretPassword: string): Promise<AuthResponse> {
+    this.ensureInitialized();
     if (!this.accessToken) {
       throw new Error('Не авторизован');
     }
