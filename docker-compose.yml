@@ -19,19 +19,17 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: zooportal-backend
+    image: traxex864/domzverei-backend:latest
+    container_name: domzverei-backend
     ports:
       - "5000:5000"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zooportal;Username=postgres;Password=postgres
-      - App__BaseUrl=http://localhost:5000
+      - App__BaseUrl=https://domzverei.ru
       - App__AdminSecret=supersecretadmin123
-      - App__FrontendUrl=http://localhost:3000
+    #  - App__FrontendUrl=http://domzverei.ru
     volumes:
       - uploads_data:/app/uploads
     depends_on:
@@ -41,16 +39,12 @@ services:
       - zooportal-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://localhost:5000/api
-    container_name: zooportal-frontend
+    image: traxex864/domzverei-frontend:latest
+    container_name: domzverei-frontend
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+      - NEXT_PUBLIC_API_URL=https://domzverei.ru/api
       - INTERNAL_API_URL=http://backend:5000/api
     depends_on:
       - backend
