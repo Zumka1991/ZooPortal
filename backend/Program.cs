@@ -24,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IImageOptimizationService, ImageOptimizationService>();
 
 // SignalR
 builder.Services.AddSignalR();

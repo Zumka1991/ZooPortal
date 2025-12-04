@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ZooPortal.Api.Data;
 using ZooPortal.Api.DTOs;
 using ZooPortal.Api.Models;
+using ZooPortal.Api.Services;
 
 namespace ZooPortal.Api.Controllers;
 
@@ -15,18 +16,21 @@ public class SheltersController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
+    private readonly IImageOptimizationService _imageOptimization;
 
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-    private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+    private const long MaxFileSize = 10 * 1024 * 1024; // 10MB (до оптимизации)
 
     public SheltersController(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IImageOptimizationService imageOptimization)
     {
         _context = context;
         _environment = environment;
         _configuration = configuration;
+        _imageOptimization = imageOptimization;
     }
 
     /// <summary>
@@ -449,14 +453,12 @@ public class SheltersController : ControllerBase
             return null;
         }
 
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads", subPath);
-        Directory.CreateDirectory(uploadsPath);
+        // Generate unique filename (always save as .jpg after optimization)
+        var fileName = $"{Guid.NewGuid()}.jpg";
 
-        var fileName = $"{Guid.NewGuid()}{extension}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        // Optimize and save
+        await using var inputStream = file.OpenReadStream();
+        await _imageOptimization.OptimizeAndSaveAsync(inputStream, fileName, subPath, maxWidth: 1920, quality: 85);
 
         var baseUrl = _configuration["App:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
         return $"{baseUrl}/uploads/{subPath}/{fileName}";

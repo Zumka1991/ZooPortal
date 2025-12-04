@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ZooPortal.Api.Data;
 using ZooPortal.Api.DTOs;
 using ZooPortal.Api.Models;
+using ZooPortal.Api.Services;
 
 namespace ZooPortal.Api.Controllers;
 
@@ -15,18 +16,21 @@ public class GalleryController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
+    private readonly IImageOptimizationService _imageOptimization;
 
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-    private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+    private const long MaxFileSize = 10 * 1024 * 1024; // 10MB (до оптимизации)
 
     public GalleryController(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IImageOptimizationService imageOptimization)
     {
         _context = context;
         _environment = environment;
         _configuration = configuration;
+        _imageOptimization = imageOptimization;
     }
 
     /// <summary>
@@ -139,7 +143,7 @@ public class GalleryController : ControllerBase
 
         if (file.Length > MaxFileSize)
         {
-            return BadRequest(new { message = "Размер файла не должен превышать 5MB" });
+            return BadRequest(new { message = "Размер файла не должен превышать 10MB" });
         }
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -148,17 +152,12 @@ public class GalleryController : ControllerBase
             return BadRequest(new { message = "Разрешены только изображения: jpg, jpeg, png, gif, webp" });
         }
 
-        // Create uploads directory
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads", "gallery");
-        Directory.CreateDirectory(uploadsPath);
+        // Generate unique filename (always save as .jpg after optimization)
+        var fileName = $"{Guid.NewGuid()}.jpg";
 
-        // Generate unique filename
-        var fileName = $"{Guid.NewGuid()}{extension}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        // Save file
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        // Optimize and save
+        await using var inputStream = file.OpenReadStream();
+        await _imageOptimization.OptimizeAndSaveAsync(inputStream, fileName, "gallery", maxWidth: 1920, quality: 85);
 
         // Build URL
         var baseUrl = _configuration["App:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
