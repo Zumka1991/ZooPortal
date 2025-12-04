@@ -46,6 +46,7 @@ public class GalleryController : ControllerBase
 
         var query = _context.GalleryImages
             .Include(g => g.User)
+            .Include(g => g.Pet)
             .Where(g => g.Status == ModerationStatus.Approved)
             .OrderByDescending(g => g.CreatedAt);
 
@@ -61,7 +62,8 @@ public class GalleryController : ControllerBase
                 g.ImageUrl,
                 g.Status,
                 g.CreatedAt,
-                new GalleryUserDto(g.User.Id, g.User.Name)
+                new GalleryUserDto(g.User.Id, g.User.Name),
+                g.Pet != null ? new GalleryPetDto(g.Pet.Id, g.Pet.Name, g.Pet.MainImageUrl) : null
             ))
             .ToListAsync();
 
@@ -86,6 +88,7 @@ public class GalleryController : ControllerBase
 
         var query = _context.GalleryImages
             .Include(g => g.User)
+            .Include(g => g.Pet)
             .Where(g => g.UserId == userId.Value);
 
         if (status.HasValue)
@@ -107,7 +110,8 @@ public class GalleryController : ControllerBase
                 g.ImageUrl,
                 g.Status,
                 g.CreatedAt,
-                new GalleryUserDto(g.User.Id, g.User.Name)
+                new GalleryUserDto(g.User.Id, g.User.Name),
+                g.Pet != null ? new GalleryPetDto(g.Pet.Id, g.Pet.Name, g.Pet.MainImageUrl) : null
             ))
             .ToListAsync();
 
@@ -196,13 +200,25 @@ public class GalleryController : ControllerBase
         _context.GalleryImages.Add(galleryImage);
         await _context.SaveChangesAsync();
 
+        // Load pet if linked
+        GalleryPetDto? petDto = null;
+        if (petId.HasValue)
+        {
+            var pet = await _context.Pets.FindAsync(petId.Value);
+            if (pet != null)
+            {
+                petDto = new GalleryPetDto(pet.Id, pet.Name, pet.MainImageUrl);
+            }
+        }
+
         return Ok(new GalleryImageDto(
             galleryImage.Id,
             galleryImage.Title,
             galleryImage.ImageUrl,
             galleryImage.Status,
             galleryImage.CreatedAt,
-            new GalleryUserDto(user.Id, user.Name)
+            new GalleryUserDto(user.Id, user.Name),
+            petDto
         ));
     }
 

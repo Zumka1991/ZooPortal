@@ -8,6 +8,12 @@ export interface GalleryUser {
   name: string;
 }
 
+export interface GalleryPet {
+  id: string;
+  name: string;
+  mainImageUrl?: string;
+}
+
 export interface GalleryImage {
   id: string;
   title: string;
@@ -15,6 +21,7 @@ export interface GalleryImage {
   status: ModerationStatus;
   createdAt: string;
   user: GalleryUser;
+  pet?: GalleryPet;
 }
 
 export interface GalleryImageDetail extends GalleryImage {

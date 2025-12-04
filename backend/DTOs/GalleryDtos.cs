@@ -8,13 +8,20 @@ public record UploadGalleryImageRequest(string Title);
 public record ModerateImageRequest(ModerationStatus Status, string? Comment);
 
 // Response DTOs
+public record GalleryPetDto(
+    Guid Id,
+    string Name,
+    string? MainImageUrl
+);
+
 public record GalleryImageDto(
     Guid Id,
     string Title,
     string ImageUrl,
     ModerationStatus Status,
     DateTime CreatedAt,
-    GalleryUserDto User
+    GalleryUserDto User,
+    GalleryPetDto? Pet
 );
 
 public record GalleryImageDetailDto(

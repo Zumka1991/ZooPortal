@@ -69,6 +69,7 @@ export function GalleryGrid({ images, showAuthor = true }: GalleryGridProps) {
           imageUrl={selectedImage.imageUrl}
           title={selectedImage.title}
           author={selectedImage.user.name}
+          pet={selectedImage.pet}
           onClose={() => setSelectedImage(null)}
         />
       )}
