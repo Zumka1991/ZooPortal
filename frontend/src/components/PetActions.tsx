@@ -35,13 +35,13 @@ export default function PetActions({
     setIsLoading(true);
     try {
       if (isLiked) {
-        await petsApi.unlikePet(petId);
-        setIsLiked(false);
-        setLikesCount((prev) => Math.max(0, prev - 1));
+        const result = await petsApi.unlikePet(petId);
+        setIsLiked(result.isLiked);
+        setLikesCount(result.likesCount);
       } else {
-        await petsApi.likePet(petId);
-        setIsLiked(true);
-        setLikesCount((prev) => prev + 1);
+        const result = await petsApi.likePet(petId);
+        setIsLiked(result.isLiked);
+        setLikesCount(result.likesCount);
       }
     } catch (err) {
       console.error('Error toggling like:', err);

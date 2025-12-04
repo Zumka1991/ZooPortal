@@ -37,15 +37,15 @@ export default function PetCard({ pet, onLikeChange }: PetCardProps) {
     setIsLikeLoading(true);
     try {
       if (isLiked) {
-        await petsApi.unlikePet(pet.id);
-        setIsLiked(false);
-        setLikesCount(likesCount - 1);
-        onLikeChange?.(pet.id, false);
+        const result = await petsApi.unlikePet(pet.id);
+        setIsLiked(result.isLiked);
+        setLikesCount(result.likesCount);
+        onLikeChange?.(pet.id, result.isLiked);
       } else {
-        await petsApi.likePet(pet.id);
-        setIsLiked(true);
-        setLikesCount(likesCount + 1);
-        onLikeChange?.(pet.id, true);
+        const result = await petsApi.likePet(pet.id);
+        setIsLiked(result.isLiked);
+        setLikesCount(result.likesCount);
+        onLikeChange?.(pet.id, result.isLiked);
       }
     } catch (error) {
       console.error('Error toggling like:', error);

@@ -593,7 +593,7 @@ public class ListingsController : ControllerBase
         }
     }
 
-    // POST: api/listings/{id}/like
+    // POST: api/listings/{id}/like (idempotent)
     [HttpPost("{id:guid}/like")]
     [Authorize]
     public async Task<ActionResult> LikeListing(Guid id)
@@ -609,24 +609,22 @@ public class ListingsController : ControllerBase
         var existingLike = await _context.ListingLikes
             .FirstOrDefaultAsync(l => l.UserId == userId.Value && l.ListingId == id);
 
-        if (existingLike != null)
-            return Ok(new { message = "Уже лайкнуто" });
-
-        var like = new ListingLike
+        if (existingLike == null)
         {
-            UserId = userId.Value,
-            ListingId = id
-        };
-
-        _context.ListingLikes.Add(like);
-        await _context.SaveChangesAsync();
+            var like = new ListingLike
+            {
+                UserId = userId.Value,
+                ListingId = id
+            };
+            _context.ListingLikes.Add(like);
+            await _context.SaveChangesAsync();
+        }
 
         var likesCount = await _context.ListingLikes.CountAsync(l => l.ListingId == id);
-
         return Ok(new { likesCount, isLiked = true });
     }
 
-    // DELETE: api/listings/{id}/like
+    // DELETE: api/listings/{id}/like (idempotent)
     [HttpDelete("{id:guid}/like")]
     [Authorize]
     public async Task<ActionResult> UnlikeListing(Guid id)
@@ -638,14 +636,13 @@ public class ListingsController : ControllerBase
         var like = await _context.ListingLikes
             .FirstOrDefaultAsync(l => l.UserId == userId.Value && l.ListingId == id);
 
-        if (like == null)
-            return Ok(new { message = "Лайк не найден" });
-
-        _context.ListingLikes.Remove(like);
-        await _context.SaveChangesAsync();
+        if (like != null)
+        {
+            _context.ListingLikes.Remove(like);
+            await _context.SaveChangesAsync();
+        }
 
         var likesCount = await _context.ListingLikes.CountAsync(l => l.ListingId == id);
-
         return Ok(new { likesCount, isLiked = false });
     }
 

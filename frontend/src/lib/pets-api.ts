@@ -371,7 +371,7 @@ class PetsApi {
   }
 
   // Like pet
-  async likePet(petId: string): Promise<void> {
+  async likePet(petId: string): Promise<{ likesCount: number; isLiked: boolean }> {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Not authenticated');
 
@@ -383,17 +383,22 @@ class PetsApi {
     });
 
     if (response.status === 401) {
-      await authService.refresh();
-      return this.likePet(petId);
+      const refreshed = await authService.refresh();
+      if (refreshed) return this.likePet(petId);
+      throw new Error('Not authenticated');
     }
 
     if (!response.ok) {
-      throw new Error('Failed to like pet');
+      const errorText = await response.text();
+      console.error('Like pet error:', response.status, errorText);
+      throw new Error(`Failed to like pet: ${response.status}`);
     }
+
+    return response.json();
   }
 
   // Unlike pet
-  async unlikePet(petId: string): Promise<void> {
+  async unlikePet(petId: string): Promise<{ likesCount: number; isLiked: boolean }> {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Not authenticated');
 
@@ -405,13 +410,18 @@ class PetsApi {
     });
 
     if (response.status === 401) {
-      await authService.refresh();
-      return this.unlikePet(petId);
+      const refreshed = await authService.refresh();
+      if (refreshed) return this.unlikePet(petId);
+      throw new Error('Not authenticated');
     }
 
     if (!response.ok) {
-      throw new Error('Failed to unlike pet');
+      const errorText = await response.text();
+      console.error('Unlike pet error:', response.status, errorText);
+      throw new Error(`Failed to unlike pet: ${response.status}`);
     }
+
+    return response.json();
   }
 
   // Get comments

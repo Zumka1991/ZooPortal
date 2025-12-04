@@ -437,7 +437,7 @@ public class PetsController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/pets/{id}/like - Like pet
+    // POST: api/pets/{id}/like - Like pet (idempotent)
     [Authorize]
     [HttpPost("{id:guid}/like")]
     public async Task<IActionResult> LikePet(Guid id)
@@ -446,29 +446,29 @@ public class PetsController : ControllerBase
         if (!userId.HasValue)
             return Unauthorized();
 
-        var pet = await _context.Pets.FirstOrDefaultAsync(p => p.Id == id);
+        var pet = await _context.Pets.Include(p => p.Likes).FirstOrDefaultAsync(p => p.Id == id);
         if (pet == null)
             return NotFound(new { message = "Питомец не найден" });
 
         var existingLike = await _context.PetLikes
             .FirstOrDefaultAsync(l => l.PetId == id && l.UserId == userId.Value);
 
-        if (existingLike != null)
-            return BadRequest(new { message = "Вы уже лайкнули этого питомца" });
-
-        var like = new PetLike
+        if (existingLike == null)
         {
-            PetId = id,
-            UserId = userId.Value
-        };
+            var like = new PetLike
+            {
+                PetId = id,
+                UserId = userId.Value
+            };
+            _context.PetLikes.Add(like);
+            await _context.SaveChangesAsync();
+        }
 
-        _context.PetLikes.Add(like);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Лайк добавлен" });
+        var likesCount = await _context.PetLikes.CountAsync(l => l.PetId == id);
+        return Ok(new { likesCount, isLiked = true });
     }
 
-    // DELETE: api/pets/{id}/like - Unlike pet
+    // DELETE: api/pets/{id}/like - Unlike pet (idempotent)
     [Authorize]
     [HttpDelete("{id:guid}/like")]
     public async Task<IActionResult> UnlikePet(Guid id)
@@ -480,13 +480,14 @@ public class PetsController : ControllerBase
         var like = await _context.PetLikes
             .FirstOrDefaultAsync(l => l.PetId == id && l.UserId == userId.Value);
 
-        if (like == null)
-            return NotFound(new { message = "Лайк не найден" });
+        if (like != null)
+        {
+            _context.PetLikes.Remove(like);
+            await _context.SaveChangesAsync();
+        }
 
-        _context.PetLikes.Remove(like);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        var likesCount = await _context.PetLikes.CountAsync(l => l.PetId == id);
+        return Ok(new { likesCount, isLiked = false });
     }
 
     // GET: api/pets/{id}/comments - Get comments
