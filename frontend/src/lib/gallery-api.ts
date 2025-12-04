@@ -110,13 +110,16 @@ export const galleryApi = {
     return response.json();
   },
 
-  upload: async (title: string, file: File): Promise<GalleryImage> => {
+  upload: async (title: string, file: File, petId?: string): Promise<GalleryImage> => {
     const token = authService.getAccessToken();
     if (!token) throw new Error('Не авторизован');
 
     const formData = new FormData();
     formData.append('title', title);
     formData.append('file', file);
+    if (petId) {
+      formData.append('petId', petId);
+    }
 
     const response = await fetch(`${getApiUrl()}/gallery`, {
       method: 'POST',
@@ -129,7 +132,7 @@ export const galleryApi = {
     if (response.status === 401) {
       const refreshed = await authService.refresh();
       if (refreshed) {
-        return galleryApi.upload(title, file);
+        return galleryApi.upload(title, file, petId);
       }
       throw new Error('Не авторизован');
     }

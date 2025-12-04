@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { galleryApi } from '@/lib/gallery-api';
+import { petsApi, UserPet } from '@/lib/pets-api';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -21,6 +22,19 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [myPets, setMyPets] = useState<UserPet[]>([]);
+  const [selectedPetId, setSelectedPetId] = useState<string>('');
+  const [loadingPets, setLoadingPets] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLoadingPets(true);
+      petsApi.getMyPetsSimple()
+        .then(pets => setMyPets(pets))
+        .catch(err => console.error('Error loading pets:', err))
+        .finally(() => setLoadingPets(false));
+    }
+  }, [isAuthenticated]);
 
   const handleFileSelect = useCallback((selectedFile: File | null) => {
     setError('');
@@ -90,7 +104,7 @@ export default function UploadPage() {
     setIsUploading(true);
 
     try {
-      await galleryApi.upload(title.trim(), file);
+      await galleryApi.upload(title.trim(), file, selectedPetId || undefined);
       router.push('/gallery/my');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки');
@@ -160,6 +174,40 @@ export default function UploadPage() {
                 className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
               <p className="text-xs text-gray-500 mt-1">{title.length}/200 символов</p>
+            </div>
+
+            {/* Pet Selection */}
+            <div>
+              <label htmlFor="pet" className="block text-sm font-medium text-gray-700 mb-2">
+                Привязать к питомцу <span className="text-gray-400">(необязательно)</span>
+              </label>
+              {loadingPets ? (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
+                  Загрузка питомцев...
+                </div>
+              ) : myPets.length > 0 ? (
+                <select
+                  id="pet"
+                  value={selectedPetId}
+                  onChange={(e) => setSelectedPetId(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">Не привязывать</option>
+                  {myPets.map((pet) => (
+                    <option key={pet.id} value={pet.id}>
+                      {pet.name} {pet.animalType ? `(${pet.animalType})` : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="text-sm text-gray-500">
+                  У вас пока нет питомцев.{' '}
+                  <Link href="/my-pets/new" className="text-purple-600 hover:underline">
+                    Добавить питомца
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* File Upload */}
