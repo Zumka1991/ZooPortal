@@ -1,0 +1,21 @@
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pawGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Главная подушечка -->
+  <ellipse cx="25" cy="32" rx="11" ry="13" fill="url(#pawGradient)"/>
+
+  <!-- Пальчики -->
+  <ellipse cx="15" cy="15" rx="5.5" ry="7.5" fill="#10b981"/>
+  <ellipse cx="25" cy="11" rx="5.5" ry="7.5" fill="#10b981"/>
+  <ellipse cx="35" cy="15" rx="5.5" ry="7.5" fill="#10b981"/>
+  <ellipse cx="40" cy="23" rx="4.5" ry="6.5" fill="#10b981"/>
+
+  <!-- Блики для объема -->
+  <ellipse cx="23" cy="29" rx="4" ry="5" fill="white" opacity="0.25"/>
+  <ellipse cx="24" cy="13" rx="2" ry="2.5" fill="white" opacity="0.3"/>
+</svg>

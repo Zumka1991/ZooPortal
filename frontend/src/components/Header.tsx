@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
 import { messagesApi } from '@/lib/messages-api';
@@ -67,8 +68,11 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-2xl">🐾</span>
-            <span className="text-xl font-bold text-green-600">DomZverei</span>
+            <Image src="/paw-icon.svg" alt="DomZverei" width={40} height={40} priority />
+            <span className="text-2xl font-bold">
+              <span className="text-emerald-700">Dom</span>
+              <span className="text-emerald-500">Zverei</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

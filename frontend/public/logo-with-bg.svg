@@ -1,0 +1,30 @@
+<svg width="240" height="80" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Фон с закруглением -->
+  <rect width="240" height="80" rx="12" fill="white"/>
+
+  <!-- Лапка -->
+  <g transform="translate(20, 20)">
+    <!-- Главная подушечка -->
+    <ellipse cx="20" cy="28" rx="12" ry="14" fill="#10b981"/>
+
+    <!-- Пальчики -->
+    <ellipse cx="10" cy="12" rx="6" ry="8" fill="#059669"/>
+    <ellipse cx="20" cy="8" rx="6" ry="8" fill="#059669"/>
+    <ellipse cx="30" cy="12" rx="6" ry="8" fill="#059669"/>
+    <ellipse cx="36" cy="20" rx="5" ry="7" fill="#059669"/>
+
+    <!-- Тени для объёма -->
+    <ellipse cx="20" cy="30" rx="10" ry="2" fill="#047857" opacity="0.2"/>
+  </g>
+
+  <!-- Текст "DomZverei" -->
+  <text x="75" y="48" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#059669">
+    Dom
+  </text>
+  <text x="130" y="48" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#10b981">
+    Zverei
+  </text>
+
+  <!-- Декоративная линия под текстом -->
+  <line x1="75" y1="52" x2="215" y2="52" stroke="#10b981" stroke-width="2" opacity="0.3"/>
+</svg>
