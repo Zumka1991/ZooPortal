@@ -282,7 +282,7 @@ public class SheltersController : ControllerBase
             return Forbid();
         }
 
-        var imageUrl = await SaveImage(file, "shelters/logos");
+        var imageUrl = await SaveImage(file, "shelters/logos", preserveTransparency: true);
         if (imageUrl == null)
         {
             return BadRequest(new { message = "Ошибка загрузки изображения" });
@@ -435,7 +435,7 @@ public class SheltersController : ControllerBase
         return Ok(shelters);
     }
 
-    private async Task<string?> SaveImage(IFormFile file, string subPath)
+    private async Task<string?> SaveImage(IFormFile file, string subPath, bool preserveTransparency = false)
     {
         if (file == null || file.Length == 0)
         {
@@ -453,12 +453,24 @@ public class SheltersController : ControllerBase
             return null;
         }
 
-        // Generate unique filename (always save as .jpg after optimization)
-        var fileName = $"{Guid.NewGuid()}.jpg";
+        // Определяем расширение файла на основе preserveTransparency и исходного формата
+        string fileExtension;
+        if (preserveTransparency && (extension == ".png" || extension == ".webp"))
+        {
+            // Для логотипов сохраняем как PNG если исходник PNG/WebP (может быть с прозрачностью)
+            fileExtension = ".png";
+        }
+        else
+        {
+            // Для остальных сохраняем как JPG
+            fileExtension = ".jpg";
+        }
+
+        var fileName = $"{Guid.NewGuid()}{fileExtension}";
 
         // Optimize and save
         await using var inputStream = file.OpenReadStream();
-        await _imageOptimization.OptimizeAndSaveAsync(inputStream, fileName, subPath, maxWidth: 1920, quality: 85);
+        await _imageOptimization.OptimizeAndSaveAsync(inputStream, fileName, subPath, maxWidth: 1920, quality: 85, preserveTransparency);
 
         var baseUrl = _configuration["App:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
         return $"{baseUrl}/uploads/{subPath}/{fileName}";
