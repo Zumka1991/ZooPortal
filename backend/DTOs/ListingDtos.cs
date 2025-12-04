@@ -15,7 +15,8 @@ public record CreateListingRequest(
     decimal? Price,
     Guid CityId,
     string? ContactPhone,
-    Guid? ShelterId
+    Guid? ShelterId,
+    Guid? PetId
 );
 
 public record UpdateListingRequest(
@@ -28,7 +29,8 @@ public record UpdateListingRequest(
     ListingType Type,
     decimal? Price,
     Guid CityId,
-    string? ContactPhone
+    string? ContactPhone,
+    Guid? PetId
 );
 
 public record ModerateListingRequest(

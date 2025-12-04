@@ -20,6 +20,9 @@ public class User : BaseEntity
     public ICollection<GalleryImage> GalleryImages { get; set; } = [];
     public ICollection<Favorite> Favorites { get; set; } = [];
     public ICollection<ListingLike> ListingLikes { get; set; } = [];
+    public ICollection<Pet> Pets { get; set; } = [];
+    public ICollection<PetLike> PetLikes { get; set; } = [];
+    public ICollection<PetComment> PetComments { get; set; } = [];
 }
 
 public enum UserRole

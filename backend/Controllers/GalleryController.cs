@@ -121,7 +121,8 @@ public class GalleryController : ControllerBase
     [Authorize]
     public async Task<ActionResult<GalleryImageDto>> Upload(
         [FromForm] string title,
-        [FromForm] IFormFile file)
+        [FromForm] IFormFile file,
+        [FromForm] Guid? petId = null)
     {
         var userId = GetUserId();
         if (userId == null) return Unauthorized();
@@ -152,6 +153,21 @@ public class GalleryController : ControllerBase
             return BadRequest(new { message = "Разрешены только изображения: jpg, jpeg, png, gif, webp" });
         }
 
+        // Validate pet ownership if petId provided
+        if (petId.HasValue)
+        {
+            var pet = await _context.Pets.FindAsync(petId.Value);
+            if (pet == null)
+            {
+                return BadRequest(new { message = "Питомец не найден" });
+            }
+
+            if (pet.UserId != userId.Value)
+            {
+                return BadRequest(new { message = "Вы не являетесь владельцем этого питомца" });
+            }
+        }
+
         // Generate unique filename (always save as .jpg after optimization)
         var fileName = $"{Guid.NewGuid()}.jpg";
 
@@ -173,6 +189,7 @@ public class GalleryController : ControllerBase
             ImageUrl = imageUrl,
             FileName = fileName,
             UserId = userId.Value,
+            PetId = petId,
             Status = ModerationStatus.Pending
         };
 
@@ -228,9 +245,52 @@ public class GalleryController : ControllerBase
         return Ok(new { message = "Изображение удалено" });
     }
 
+    /// <summary>
+    /// Привязать существующее фото к питомцу
+    /// </summary>
+    [HttpPut("{id:guid}/attach-pet")]
+    [Authorize]
+    public async Task<ActionResult> AttachToPet(Guid id, [FromBody] AttachPetRequest request)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var image = await _context.GalleryImages.FindAsync(id);
+        if (image == null)
+        {
+            return NotFound(new { message = "Изображение не найдено" });
+        }
+
+        if (image.UserId != userId.Value)
+        {
+            return Forbid();
+        }
+
+        if (request.PetId.HasValue)
+        {
+            var pet = await _context.Pets.FindAsync(request.PetId.Value);
+            if (pet == null)
+            {
+                return BadRequest(new { message = "Питомец не найден" });
+            }
+
+            if (pet.UserId != userId.Value)
+            {
+                return BadRequest(new { message = "Вы не являетесь владельцем этого питомца" });
+            }
+        }
+
+        image.PetId = request.PetId;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Фото успешно привязано к питомцу" });
+    }
+
     private Guid? GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 }
+
+public record AttachPetRequest(Guid? PetId);

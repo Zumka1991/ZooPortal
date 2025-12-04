@@ -25,6 +25,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<StaticPage> StaticPages => Set<StaticPage>();
+    public DbSet<Pet> Pets => Set<Pet>();
+    public DbSet<PetImage> PetImages => Set<PetImage>();
+    public DbSet<PetLike> PetLikes => Set<PetLike>();
+    public DbSet<PetComment> PetComments => Set<PetComment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -294,6 +298,80 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.LastEditedById)
                 .OnDelete(DeleteBehavior.SetNull);
         });
+
+        // Pet
+        modelBuilder.Entity<Pet>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Breed).HasMaxLength(100);
+            entity.Property(e => e.MainImageUrl).HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Pets)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // PetImage
+        modelBuilder.Entity<PetImage>(entity =>
+        {
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+
+            entity.HasOne(e => e.Pet)
+                .WithMany(p => p.Images)
+                .HasForeignKey(e => e.PetId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // PetLike
+        modelBuilder.Entity<PetLike>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.PetId }).IsUnique();
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.PetLikes)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Pet)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(e => e.PetId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // PetComment
+        modelBuilder.Entity<PetComment>(entity =>
+        {
+            entity.Property(e => e.Text).HasMaxLength(2000);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.PetComments)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Pet)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(e => e.PetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.PetId);
+            entity.HasIndex(e => new { e.PetId, e.CreatedAt });
+        });
+
+        // Listing - add Pet relationship
+        modelBuilder.Entity<Listing>()
+            .HasOne(e => e.Pet)
+            .WithMany(p => p.Listings)
+            .HasForeignKey(e => e.PetId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // GalleryImage - add Pet relationship
+        modelBuilder.Entity<GalleryImage>()
+            .HasOne(e => e.Pet)
+            .WithMany(p => p.GalleryImages)
+            .HasForeignKey(e => e.PetId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

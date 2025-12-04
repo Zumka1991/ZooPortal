@@ -34,6 +34,9 @@ public class Listing : BaseEntity
     public Guid? ShelterId { get; set; }
     public Shelter? Shelter { get; set; }
 
+    public Guid? PetId { get; set; }
+    public Pet? Pet { get; set; }
+
     // Navigation
     public ICollection<ListingImage> Images { get; set; } = [];
     public ICollection<ListingLike> Likes { get; set; } = [];

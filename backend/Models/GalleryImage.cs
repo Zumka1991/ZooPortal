@@ -15,6 +15,10 @@ public class GalleryImage : BaseEntity
     // Owner
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
+
+    // Optional pet attachment
+    public Guid? PetId { get; set; }
+    public Pet? Pet { get; set; }
 }
 
 public enum ModerationStatus

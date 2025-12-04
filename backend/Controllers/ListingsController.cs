@@ -246,6 +246,14 @@ public class ListingsController : ControllerBase
                 return BadRequest(new { message = "Приют не найден или вы не являетесь его владельцем" });
         }
 
+        // Validate pet ownership if provided
+        if (request.PetId.HasValue)
+        {
+            var pet = await _context.Pets.FindAsync(request.PetId.Value);
+            if (pet == null || pet.UserId != userId.Value)
+                return BadRequest(new { message = "Питомец не найден или вы не являетесь его владельцем" });
+        }
+
         var listing = new Listing
         {
             Title = request.Title,
@@ -260,6 +268,7 @@ public class ListingsController : ControllerBase
             ContactPhone = request.ContactPhone,
             UserId = userId.Value,
             ShelterId = shelter?.Id,
+            PetId = request.PetId,
             Status = ListingStatus.Moderation,
             ModerationStatus = ModerationStatus.Pending,
             ExpiresAt = DateTime.UtcNow.AddDays(30)
@@ -306,6 +315,14 @@ public class ListingsController : ControllerBase
         if (city == null)
             return BadRequest(new { message = "Город не найден" });
 
+        // Validate pet ownership if provided
+        if (request.PetId.HasValue)
+        {
+            var pet = await _context.Pets.FindAsync(request.PetId.Value);
+            if (pet == null || pet.UserId != userId.Value)
+                return BadRequest(new { message = "Питомец не найден или вы не являетесь его владельцем" });
+        }
+
         listing.Title = request.Title;
         listing.Description = request.Description;
         listing.AnimalType = request.AnimalType;
@@ -316,6 +333,7 @@ public class ListingsController : ControllerBase
         listing.Price = request.Price;
         listing.CityId = request.CityId;
         listing.ContactPhone = request.ContactPhone;
+        listing.PetId = request.PetId;
 
         await _context.SaveChangesAsync();
 
