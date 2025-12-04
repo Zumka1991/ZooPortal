@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
 import { messagesApi } from '@/lib/messages-api';
@@ -68,7 +67,21 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <Image src="/paw-icon.svg" alt="DomZverei" width={40} height={40} priority />
+            <svg width="40" height="40" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+              <defs>
+                <linearGradient id="pawGradientHeader" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{stopColor: '#10b981', stopOpacity: 1}} />
+                  <stop offset="100%" style={{stopColor: '#059669', stopOpacity: 1}} />
+                </linearGradient>
+              </defs>
+              <ellipse cx="25" cy="32" rx="11" ry="13" fill="url(#pawGradientHeader)"/>
+              <ellipse cx="15" cy="15" rx="5.5" ry="7.5" fill="#10b981"/>
+              <ellipse cx="25" cy="11" rx="5.5" ry="7.5" fill="#10b981"/>
+              <ellipse cx="35" cy="15" rx="5.5" ry="7.5" fill="#10b981"/>
+              <ellipse cx="40" cy="23" rx="4.5" ry="6.5" fill="#10b981"/>
+              <ellipse cx="23" cy="29" rx="4" ry="5" fill="white" opacity="0.25"/>
+              <ellipse cx="24" cy="13" rx="2" ry="2.5" fill="white" opacity="0.3"/>
+            </svg>
             <span className="text-2xl font-bold">
               <span className="text-emerald-700">Dom</span>
               <span className="text-emerald-500">Zverei</span>
