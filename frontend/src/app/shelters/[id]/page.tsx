@@ -32,9 +32,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         canonical: `${BASE_URL}/shelters/${id}`,
       },
     };
-  } catch {
+  } catch (error) {
+    // Only return 404 title for NOT_FOUND, otherwise generic error
+    if (error instanceof Error && error.message === 'NOT_FOUND') {
+      return {
+        title: 'Приют не найден | DomZverei',
+      };
+    }
     return {
-      title: 'Приют не найден | DomZverei',
+      title: 'Ошибка загрузки | DomZverei',
     };
   }
 }
@@ -45,8 +51,12 @@ export default async function ShelterDetailPage({ params }: Props) {
   let shelter;
   try {
     shelter = await sheltersApi.getShelter(id);
-  } catch {
-    notFound();
+  } catch (error) {
+    // Only show 404 for NOT_FOUND error, throw other errors
+    if (error instanceof Error && error.message === 'NOT_FOUND') {
+      notFound();
+    }
+    throw error;
   }
 
   const allImages = shelter.logoUrl

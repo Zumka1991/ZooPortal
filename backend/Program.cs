@@ -18,9 +18,29 @@ builder.Services.AddControllers()
     });
 builder.Services.AddOpenApi();
 
-// Database
+// Database with retry policy for transient failures
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions =>
+        {
+            // Enable retry on failure (handles transient errors)
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null);
+
+            // Command timeout (30 seconds)
+            npgsqlOptions.CommandTimeout(30);
+        });
+
+    // Enable sensitive data logging in development
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+    }
+});
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();

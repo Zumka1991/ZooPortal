@@ -179,6 +179,7 @@ export const sheltersApi = {
 
     const response = await fetch(`${getApiUrl()}/shelters/${id}`, {
       headers,
+      cache: 'no-store', // Avoid caching failed requests
     });
 
     if (response.status === 401 && token) {
@@ -186,7 +187,16 @@ export const sheltersApi = {
       if (refreshed) return sheltersApi.getShelter(id);
     }
 
-    if (!response.ok) throw new Error('Приют не найден');
+    // Differentiate between 404 and other errors
+    if (response.status === 404) {
+      throw new Error('NOT_FOUND');
+    }
+
+    if (!response.ok) {
+      console.error(`Failed to fetch shelter ${id}: ${response.status} ${response.statusText}`);
+      throw new Error(`Не удалось загрузить приют: ${response.status}`);
+    }
+
     return response.json();
   },
 

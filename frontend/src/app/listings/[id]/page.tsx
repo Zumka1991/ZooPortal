@@ -26,41 +26,59 @@ async function getListing(id: string): Promise<ListingDetail | null> {
   try {
     const response = await fetch(`${getApiUrl()}/listings/${id}`, {
       next: { revalidate: 60 },
+      cache: 'no-store', // Avoid caching failed requests
     });
-    if (!response.ok) return null;
+
+    // Only return null for 404 - other errors should be thrown
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      console.error(`Failed to fetch listing ${id}: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load listing: ${response.status}`);
+    }
+
     return response.json();
-  } catch {
-    return null;
+  } catch (error) {
+    // Network errors or JSON parse errors
+    console.error(`Error fetching listing ${id}:`, error);
+    throw error;
   }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const listing = await getListing(id);
 
-  if (!listing) {
-    return { title: 'Объявление не найдено | DomZverei' };
-  }
+  try {
+    const listing = await getListing(id);
 
-  const animalLabel = ANIMAL_TYPE_LABELS[listing.animalType] || 'Животное';
-  const typeLabel = LISTING_TYPE_LABELS[listing.type] || '';
-  const description = listing.description.substring(0, 160);
+    if (!listing) {
+      return { title: 'Объявление не найдено | DomZverei' };
+    }
 
-  return {
-    title: `${listing.title} - ${typeLabel} ${animalLabel} | DomZverei`,
-    description,
-    openGraph: {
-      title: listing.title,
+    const animalLabel = ANIMAL_TYPE_LABELS[listing.animalType] || 'Животное';
+    const typeLabel = LISTING_TYPE_LABELS[listing.type] || '';
+    const description = listing.description.substring(0, 160);
+
+    return {
+      title: `${listing.title} - ${typeLabel} ${animalLabel} | DomZverei`,
       description,
-      url: `${BASE_URL}/listings/${id}`,
-      type: 'website',
-      images: listing.images.length > 0 ? [listing.images[0].url] : [],
-      locale: 'ru_RU',
-    },
-    alternates: {
-      canonical: `${BASE_URL}/listings/${id}`,
-    },
-  };
+      openGraph: {
+        title: listing.title,
+        description,
+        url: `${BASE_URL}/listings/${id}`,
+        type: 'website',
+        images: listing.images.length > 0 ? [listing.images[0].url] : [],
+        locale: 'ru_RU',
+      },
+      alternates: {
+        canonical: `${BASE_URL}/listings/${id}`,
+      },
+    };
+  } catch (error) {
+    return { title: 'Ошибка загрузки | DomZverei' };
+  }
 }
 
 export default async function ListingDetailPage({ params }: Props) {

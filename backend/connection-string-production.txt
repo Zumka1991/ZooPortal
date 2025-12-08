@@ -1,0 +1,18 @@
+# Production Connection String with Pooling Parameters
+# Скопируйте эту строку в переменную окружения на сервере
+
+ConnectionStrings__DefaultConnection=Host=your-postgres-host;Port=5432;Database=zooportal;Username=your-user;Password=your-password;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;Connection Idle Lifetime=300;Connection Pruning Interval=10;Timeout=30;Command Timeout=30;Keepalive=30
+
+# Параметры:
+# - Pooling=true: Включает connection pooling
+# - Minimum Pool Size=5: Минимум 5 соединений в пуле
+# - Maximum Pool Size=100: Максимум 100 соединений
+# - Connection Idle Lifetime=300: Закрывать idle соединения через 5 минут
+# - Connection Pruning Interval=10: Проверять и удалять старые соединения каждые 10 секунд
+# - Timeout=30: Таймаут подключения 30 секунд
+# - Command Timeout=30: Таймаут выполнения команды 30 секунд
+# - Keepalive=30: Отправлять keepalive каждые 30 секунд
+
+# Использование в Docker Compose:
+# environment:
+#   - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zooportal;Username=postgres;Password=your-password;Pooling=true;Minimum Pool Size=5;Maximum Pool Size=100;Connection Idle Lifetime=300;Connection Pruning Interval=10;Timeout=30;Command Timeout=30;Keepalive=30

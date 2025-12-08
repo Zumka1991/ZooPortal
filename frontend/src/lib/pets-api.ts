@@ -205,15 +205,24 @@ class PetsApi {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${this.baseUrl}/pets/${id}`, { headers });
+    const response = await fetch(`${this.baseUrl}/pets/${id}`, {
+      headers,
+      cache: 'no-store', // Avoid caching failed requests
+    });
 
     if (response.status === 401 && token) {
       await authService.refresh();
       return this.getPet(id);
     }
 
+    // Differentiate between 404 and other errors
+    if (response.status === 404) {
+      throw new Error('NOT_FOUND');
+    }
+
     if (!response.ok) {
-      throw new Error('Pet not found');
+      console.error(`Failed to fetch pet ${id}: ${response.status} ${response.statusText}`);
+      throw new Error(`Не удалось загрузить питомца: ${response.status}`);
     }
 
     return response.json();

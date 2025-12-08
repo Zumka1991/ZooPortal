@@ -39,8 +39,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         canonical: `${BASE_URL}/pets/${id}`,
       },
     };
-  } catch {
-    return { title: 'Питомец не найден | DomZverei' };
+  } catch (error) {
+    // Only return 404 title for NOT_FOUND, otherwise generic error
+    if (error instanceof Error && error.message === 'NOT_FOUND') {
+      return { title: 'Питомец не найден | DomZverei' };
+    }
+    return { title: 'Ошибка загрузки | DomZverei' };
   }
 }
 
@@ -50,8 +54,12 @@ export default async function PetDetailPage({ params }: Props) {
   let pet;
   try {
     pet = await petsApi.getPet(id);
-  } catch {
-    notFound();
+  } catch (error) {
+    // Only show 404 for NOT_FOUND error, throw other errors
+    if (error instanceof Error && error.message === 'NOT_FOUND') {
+      notFound();
+    }
+    throw error;
   }
 
   const allImages = [
