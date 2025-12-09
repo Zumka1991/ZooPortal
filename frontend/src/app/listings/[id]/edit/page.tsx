@@ -20,6 +20,7 @@ import {
 } from '@/lib/listings-api';
 import { citiesApi, City } from '@/lib/shelters-api';
 import { useAuth } from '@/components/AuthProvider';
+import CitySelect from '@/components/CitySelect';
 
 export default function EditListingPage() {
   const router = useRouter();
@@ -522,21 +523,14 @@ export default function EditListingPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Город *
               </label>
-              <select
-                name="cityId"
+              <CitySelect
+                cities={cities}
                 value={formData.cityId}
-                onChange={handleChange}
+                onChange={(cityId) => setFormData((prev) => ({ ...prev, cityId }))}
                 disabled={!canEdit}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
                 required
-              >
-                <option value="">Выберите город</option>
-                {cities.map((city) => (
-                  <option key={city.id} value={city.id}>
-                    {city.name}{city.region ? `, ${city.region}` : ''}
-                  </option>
-                ))}
-              </select>
+                placeholder="Начните вводить название города..."
+              />
             </div>
 
             {/* Contact Phone */}

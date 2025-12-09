@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/components/AuthProvider';
+import CitySelect from '@/components/CitySelect';
 import {
   lostFoundApi,
   LostFoundType,
@@ -227,19 +228,13 @@ export default function NewLostFoundPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Город *
             </label>
-            <select
+            <CitySelect
+              cities={cities}
               value={cityId}
-              onChange={(e) => setCityId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+              onChange={setCityId}
               required
-            >
-              <option value="">Выберите город</option>
-              {cities.map(city => (
-                <option key={city.id} value={city.id}>
-                  {city.name}{city.region ? `, ${city.region}` : ''}
-                </option>
-              ))}
-            </select>
+              placeholder="Начните вводить название города..."
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
