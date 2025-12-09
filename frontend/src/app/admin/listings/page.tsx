@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { citiesApi, City } from '@/lib/shelters-api';
+import CitySelect from '@/components/CitySelect';
 import {
   adminListingsApi,
   ListingDetail,
@@ -289,18 +290,12 @@ export default function AdminListingsPage() {
             </select>
           </div>
           <div className="flex flex-col md:flex-row gap-4">
-            <select
+            <CitySelect
+              cities={cities}
               value={cityFilter}
-              onChange={(e) => { setCityFilter(e.target.value); setPage(1); }}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Все города</option>
-              {cities.map(city => (
-                <option key={city.id} value={city.id}>
-                  {city.name}{city.region ? `, ${city.region}` : ''}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => { setCityFilter(value); setPage(1); }}
+              placeholder="Все города"
+            />
             <button
               onClick={() => { setStatusFilter(''); setTypeFilter(''); setAnimalTypeFilter(''); setCityFilter(''); setSearch(''); setPage(1); }}
               className="px-4 py-2 text-gray-600 hover:text-gray-900"

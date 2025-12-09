@@ -15,6 +15,7 @@ import {
   ANIMAL_TYPE_LABELS,
 } from '@/lib/lost-found-api';
 import { citiesApi, City } from '@/lib/shelters-api';
+import CitySelect from '@/components/CitySelect';
 
 // Динамический импорт карты
 const Map = dynamic(() => import('@/components/Map'), {
@@ -188,18 +189,12 @@ function LostFoundContent() {
               ))}
             </select>
 
-            <select
+            <CitySelect
+              cities={cities}
               value={cityFilter}
-              onChange={(e) => { setCityFilter(e.target.value); setPage(1); }}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Все города</option>
-              {cities.map(city => (
-                <option key={city.id} value={city.id}>
-                  {city.name}{city.region ? `, ${city.region}` : ''}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => { setCityFilter(value); setPage(1); }}
+              placeholder="Все города"
+            />
 
             <input
               type="text"

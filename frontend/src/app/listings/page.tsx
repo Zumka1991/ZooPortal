@@ -14,6 +14,7 @@ import {
 import { citiesApi, City } from '@/lib/shelters-api';
 import { useAuth } from '@/components/AuthProvider';
 import ListingCard from '@/components/ListingCard';
+import CitySelect from '@/components/CitySelect';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -210,18 +211,12 @@ function ListingsContent() {
             </select>
 
             {/* City Filter */}
-            <select
+            <CitySelect
+              cities={cities}
               value={cityId}
-              onChange={(e) => handleCityChange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="">Все города</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}{city.region ? `, ${city.region}` : ''}
-                </option>
-              ))}
-            </select>
+              onChange={handleCityChange}
+              placeholder="Все города"
+            />
           </div>
 
           {hasFilters && (

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { sheltersApi, citiesApi, ShelterListItem, City } from '@/lib/shelters-api';
 import { useAuth } from '@/components/AuthProvider';
+import CitySelect from '@/components/CitySelect';
 
 // Функция для подсветки совпадений
 function highlightText(text: string, search: string): React.ReactNode {
@@ -166,18 +167,12 @@ function SheltersContent() {
                 </button>
               )}
             </div>
-            <select
+            <CitySelect
+              cities={cities}
               value={cityId}
-              onChange={(e) => handleCityChange(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Все города</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}{city.region ? `, ${city.region}` : ''}
-                </option>
-              ))}
-            </select>
+              onChange={handleCityChange}
+              placeholder="Все города"
+            />
           </div>
           {searchInput && (
             <p className="text-sm text-gray-500 mt-2">
