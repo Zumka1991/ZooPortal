@@ -204,6 +204,28 @@ export const lostFoundApi = {
       },
       body: JSON.stringify(data),
     });
+
+    // If 401, try to refresh token and retry
+    if (response.status === 401) {
+      const refreshed = await authService.refresh();
+      if (refreshed) {
+        const newToken = authService.getAccessToken();
+        const retryResponse = await fetch(`${getApiUrl()}/lost-found`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newToken}`,
+          },
+          body: JSON.stringify(data),
+        });
+        if (!retryResponse.ok) {
+          const error = await retryResponse.json().catch(() => ({ message: 'Ошибка создания' }));
+          throw new Error(error.message);
+        }
+        return retryResponse.json();
+      }
+    }
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Ошибка создания' }));
       throw new Error(error.message);
