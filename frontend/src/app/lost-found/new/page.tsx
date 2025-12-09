@@ -25,10 +25,12 @@ export default function NewLostFoundPage() {
 
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [error, setError] = useState('');
 
   // Форма
   const [type, setType] = useState<LostFoundType>('Lost');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [animalType, setAnimalType] = useState<AnimalType>('Dog');
@@ -51,12 +53,24 @@ export default function NewLostFoundPage() {
     citiesApi.getCities().then(setCities);
   }, []);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(prev => [...prev, ...files].slice(0, 10)); // Max 10 photos
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setUploadProgress('');
 
     try {
+      // Create lost-found item
+      setUploadProgress('Создание объявления...');
       const result = await lostFoundApi.create({
         type,
         title,
@@ -73,11 +87,21 @@ export default function NewLostFoundPage() {
         contactPhone: contactPhone || undefined,
       });
 
+      // Upload images if any
+      if (selectedFiles.length > 0) {
+        setUploadProgress(`Загрузка фотографий (0/${selectedFiles.length})...`);
+        for (let i = 0; i < selectedFiles.length; i++) {
+          await lostFoundApi.uploadImage(result.id, selectedFiles[i]);
+          setUploadProgress(`Загрузка фотографий (${i + 1}/${selectedFiles.length})...`);
+        }
+      }
+
       router.push(`/lost-found/${result.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка создания');
     } finally {
       setIsLoading(false);
+      setUploadProgress('');
     }
   };
 
@@ -286,16 +310,75 @@ export default function NewLostFoundPage() {
           />
         </div>
 
+        {/* Photo Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Фотографии (до 10 шт)
+          </label>
+
+          {selectedFiles.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedFiles.length < 10 && (
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 transition-colors">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <p className="text-sm text-gray-500">
+                  <span className="font-semibold">Нажмите для выбора</span> или перетащите фото
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  PNG, JPG до 10MB ({selectedFiles.length}/10)
+                </p>
+              </div>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+
         {error && (
           <div className="bg-red-50 text-red-600 px-4 py-3 rounded-md">
             {error}
           </div>
         )}
 
+        {uploadProgress && (
+          <div className="bg-blue-50 text-blue-700 px-4 py-3 rounded-md flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700"></div>
+            {uploadProgress}
+          </div>
+        )}
+
         <div className="bg-yellow-50 p-4 rounded-lg">
           <p className="text-sm text-yellow-800">
             После создания объявление будет отправлено на модерацию.
-            Вы сможете добавить фотографии после сохранения.
           </p>
         </div>
 
@@ -304,7 +387,7 @@ export default function NewLostFoundPage() {
           disabled={isLoading}
           className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
         >
-          {isLoading ? 'Создание...' : 'Создать объявление'}
+          {isLoading ? (uploadProgress || 'Создание...') : 'Создать объявление'}
         </button>
       </form>
     </div>
