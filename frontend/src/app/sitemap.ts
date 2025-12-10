@@ -3,10 +3,13 @@ import { getApiUrl } from '@/lib/api-url';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://domzverei.ru';
 
+// Cache sitemap data for 6 hours to reduce API load from bots
+const SITEMAP_REVALIDATE = 21600;
+
 async function fetchShelters() {
   try {
     const response = await fetch(`${getApiUrl()}/shelters?pageSize=1000`, {
-      next: { revalidate: 3600 } // Revalidate every hour
+      next: { revalidate: SITEMAP_REVALIDATE }
     });
     if (!response.ok) return [];
     const data = await response.json();
@@ -19,7 +22,7 @@ async function fetchShelters() {
 async function fetchArticles() {
   try {
     const response = await fetch(`${getApiUrl()}/articles/public?pageSize=1000`, {
-      next: { revalidate: 3600 }
+      next: { revalidate: SITEMAP_REVALIDATE }
     });
     if (!response.ok) return [];
     const data = await response.json();
@@ -32,7 +35,7 @@ async function fetchArticles() {
 async function fetchListings() {
   try {
     const response = await fetch(`${getApiUrl()}/listings?pageSize=1000`, {
-      next: { revalidate: 3600 }
+      next: { revalidate: SITEMAP_REVALIDATE }
     });
     if (!response.ok) return [];
     const data = await response.json();
@@ -45,7 +48,7 @@ async function fetchListings() {
 async function fetchPets() {
   try {
     const response = await fetch(`${getApiUrl()}/pets?pageSize=1000`, {
-      next: { revalidate: 3600 }
+      next: { revalidate: SITEMAP_REVALIDATE }
     });
     if (!response.ok) return [];
     const data = await response.json();
@@ -58,7 +61,7 @@ async function fetchPets() {
 async function fetchLostFound() {
   try {
     const response = await fetch(`${getApiUrl()}/lost-found?pageSize=1000`, {
-      next: { revalidate: 3600 }
+      next: { revalidate: SITEMAP_REVALIDATE }
     });
     if (!response.ok) return [];
     const data = await response.json();

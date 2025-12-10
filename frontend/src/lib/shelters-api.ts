@@ -179,7 +179,7 @@ export const sheltersApi = {
 
     const response = await fetch(`${getApiUrl()}/shelters/${id}`, {
       headers,
-      cache: 'no-store', // Avoid caching failed requests
+      next: { revalidate: 60 }, // Cache for 60 seconds
     });
 
     if (response.status === 401 && token) {

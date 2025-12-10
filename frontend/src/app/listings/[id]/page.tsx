@@ -25,8 +25,7 @@ interface Props {
 async function getListing(id: string): Promise<ListingDetail | null> {
   try {
     const response = await fetch(`${getApiUrl()}/listings/${id}`, {
-      next: { revalidate: 60 },
-      cache: 'no-store', // Avoid caching failed requests
+      next: { revalidate: 60 }, // Cache for 60 seconds
     });
 
     // Only return null for 404 - other errors should be thrown
