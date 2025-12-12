@@ -69,11 +69,13 @@ export default function Header() {
     setUnreadCount((prev) => prev + 1);
   }, []);
 
-  // SignalR для обновления счетчика в реальном времени
-  useChat({
-    onNewMessage: handleNewMessage,
-    onNewConversation: handleNewConversation,
-  });
+  // SignalR для обновления счетчика в реальном времени (только для авторизованных)
+  const chatConnection = useChat(
+    user ? {
+      onNewMessage: handleNewMessage,
+      onNewConversation: handleNewConversation,
+    } : undefined
+  );
 
   // Загрузка количества непрочитанных при авторизации
   useEffect(() => {
