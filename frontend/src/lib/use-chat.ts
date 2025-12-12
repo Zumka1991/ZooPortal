@@ -34,7 +34,11 @@ export function useChat(options?: UseChatOptions) {
   // Подключение к хабу
   useEffect(() => {
     const token = authService.getAccessToken();
-    if (!token) return;
+    if (!token) {
+      console.log('[SignalR] No token, skipping connection');
+      return;
+    }
+    console.log('[SignalR] Attempting connection...');
 
     // Если уже подключаемся, не создаем новое соединение
     if (isConnectingRef.current) return;
@@ -111,8 +115,12 @@ export function useChat(options?: UseChatOptions) {
       .start()
       .then(() => {
         if (isMounted) {
+          console.log('[SignalR] Connected successfully');
           setIsConnected(true);
           isConnectingRef.current = false;
+        } else {
+          console.log('[SignalR] Connected but component unmounted, closing...');
+          connection.stop();
         }
       })
       .catch((err) => {
@@ -124,6 +132,7 @@ export function useChat(options?: UseChatOptions) {
       });
 
     return () => {
+      console.log('[SignalR] Cleanup: component unmounting');
       isMounted = false;
       isConnectingRef.current = false;
       setIsConnected(false);
@@ -137,8 +146,9 @@ export function useChat(options?: UseChatOptions) {
 
       // Останавливаем соединение
       if (connection.state !== signalR.HubConnectionState.Disconnected) {
+        console.log(`[SignalR] Stopping connection (state: ${connection.state})`);
         connection.stop().catch((err) => {
-          console.warn('Error stopping SignalR connection:', err);
+          console.warn('[SignalR] Error stopping connection:', err);
         });
       }
 
