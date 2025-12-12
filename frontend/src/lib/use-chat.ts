@@ -34,17 +34,41 @@ export function useChat(options?: UseChatOptions) {
   // Подключение к хабу
   useEffect(() => {
     const token = authService.getAccessToken();
-    if (!token || isConnectingRef.current || connectionRef.current) return;
+    if (!token) return;
+
+    // Если уже подключаемся, не создаем новое соединение
+    if (isConnectingRef.current) return;
+
+    // Если уже есть активное соединение, не создаем новое
+    if (connectionRef.current?.state === signalR.HubConnectionState.Connected ||
+        connectionRef.current?.state === signalR.HubConnectionState.Connecting) {
+      return;
+    }
 
     isConnectingRef.current = true;
+    let isMounted = true;
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${HUB_URL}/hubs/chat`, {
-        accessTokenFactory: () => authService.getAccessToken() || '',
+        accessTokenFactory: () => {
+          // Возвращаем токен только если компонент еще смонтирован
+          return isMounted ? (authService.getAccessToken() || '') : '';
+        },
         // Используем все транспорты с приоритетом WebSocket
         transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
       })
-      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+      .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: (retryContext) => {
+          // Останавливаем reconnect если компонент размонтирован
+          if (!isMounted) return null;
+          // Прогрессивная задержка: 0, 2, 5, 10, 30 секунд, потом останавливаемся
+          const delays = [0, 2000, 5000, 10000, 30000];
+          if (retryContext.previousRetryCount >= delays.length) {
+            return null; // Прекращаем попытки после 5 попыток
+          }
+          return delays[retryContext.previousRetryCount];
+        },
+      })
       .configureLogging(signalR.LogLevel.Warning)
       .build();
 
@@ -86,18 +110,38 @@ export function useChat(options?: UseChatOptions) {
     connection
       .start()
       .then(() => {
-        setIsConnected(true);
-        isConnectingRef.current = false;
+        if (isMounted) {
+          setIsConnected(true);
+          isConnectingRef.current = false;
+        }
       })
       .catch((err) => {
         console.warn('SignalR connection error:', err.message);
-        isConnectingRef.current = false;
+        if (isMounted) {
+          isConnectingRef.current = false;
+        }
         // Не критично - REST API работает как fallback
       });
 
     return () => {
+      isMounted = false;
       isConnectingRef.current = false;
-      connection.stop().catch(() => {});
+      setIsConnected(false);
+
+      // Отключаем все обработчики перед остановкой
+      connection.off('NewMessage');
+      connection.off('NewConversation');
+      connection.off('Error');
+      connection.off('ReceiveMessage');
+      connection.off('MessagesRead');
+
+      // Останавливаем соединение
+      if (connection.state !== signalR.HubConnectionState.Disconnected) {
+        connection.stop().catch((err) => {
+          console.warn('Error stopping SignalR connection:', err);
+        });
+      }
+
       connectionRef.current = null;
     };
   }, []);

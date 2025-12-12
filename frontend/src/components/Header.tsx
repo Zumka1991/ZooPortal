@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 import { messagesApi } from '@/lib/messages-api';
 import { useChat } from '@/lib/use-chat';
@@ -60,14 +60,19 @@ export default function Header() {
     return pathname.startsWith(href);
   };
 
+  // Мемоизированные callbacks для SignalR
+  const handleNewMessage = useCallback(() => {
+    setUnreadCount((prev) => prev + 1);
+  }, []);
+
+  const handleNewConversation = useCallback(() => {
+    setUnreadCount((prev) => prev + 1);
+  }, []);
+
   // SignalR для обновления счетчика в реальном времени
   useChat({
-    onNewMessage: () => {
-      setUnreadCount((prev) => prev + 1);
-    },
-    onNewConversation: () => {
-      setUnreadCount((prev) => prev + 1);
-    },
+    onNewMessage: handleNewMessage,
+    onNewConversation: handleNewConversation,
   });
 
   // Загрузка количества непрочитанных при авторизации
