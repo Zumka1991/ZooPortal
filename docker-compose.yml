@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: zooportal-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -14,6 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - zooportal-network
+    mem_limit: 512m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -23,6 +25,7 @@ services:
   backend:
     image: traxex864/domzverei-backend:latest
     container_name: domzverei-backend
+    restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
@@ -31,6 +34,8 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zooportal;Username=postgres;Password=postgres
       - App__BaseUrl=https://domzverei.ru
       - App__AdminSecret=supersecretadmin123
+      # Limit .NET memory to prevent OOM
+      - DOTNET_GCHeapHardLimit=0x1E000000
     #  - App__FrontendUrl=http://domzverei.ru
     volumes:
       - uploads_data:/app/uploads
@@ -39,19 +44,35 @@ services:
         condition: service_healthy
     networks:
       - zooportal-network
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/cities || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     image: traxex864/domzverei-frontend:latest
     container_name: domzverei-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=https://domzverei.ru/api
       - INTERNAL_API_URL=http://backend:5000/api
+      - NODE_OPTIONS=--max-old-space-size=384
     depends_on:
       - backend
     networks:
       - zooportal-network
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
   zooportal-network:

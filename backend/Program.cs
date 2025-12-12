@@ -33,6 +33,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
             // Command timeout (30 seconds)
             npgsqlOptions.CommandTimeout(30);
+
+            // Use split queries by default to avoid cartesian explosion
+            npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         });
 
     // Enable sensitive data logging in development
