@@ -26,7 +26,14 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-echo -e "${GREEN}Проверяю авторизацию в Docker Hub...${NC}"
+# Обновляем код из git
+echo -e "${GREEN}Получаю последние изменения из git...${NC}"
+git pull
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Ошибка обновления из git. Продолжаю с текущей версией...${NC}"
+fi
+
+echo -e "\n${GREEN}Проверяю авторизацию в Docker Hub...${NC}"
 if ! docker login --username $DOCKER_USERNAME 2>&1 | grep -q "Login Succeeded"; then
     echo -e "${RED}Требуется авторизация в Docker Hub${NC}"
     docker login
@@ -36,15 +43,15 @@ if ! docker login --username $DOCKER_USERNAME 2>&1 | grep -q "Login Succeeded"; 
     fi
 fi
 
-echo -e "\n${GREEN}Собираю Backend...${NC}"
-docker build -t $BACKEND_IMAGE ./backend
+echo -e "\n${GREEN}Собираю Backend (без кеша)...${NC}"
+docker build --no-cache -t $BACKEND_IMAGE ./backend
 if [ $? -ne 0 ]; then
     echo -e "${RED}Ошибка сборки Backend${NC}"
     exit 1
 fi
 
-echo -e "\n${GREEN}Собираю Frontend...${NC}"
-docker build -t $FRONTEND_IMAGE \
+echo -e "\n${GREEN}Собираю Frontend (без кеша)...${NC}"
+docker build --no-cache -t $FRONTEND_IMAGE \
     --build-arg NEXT_PUBLIC_API_URL=$API_URL \
     ./frontend
 if [ $? -ne 0 ]; then
